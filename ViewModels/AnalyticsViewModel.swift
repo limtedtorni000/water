@@ -9,9 +9,9 @@ class AnalyticsViewModel: ObservableObject {
     @Published var activeDays: Int = 0
     @Published var waterUnit = "ml"
     @Published var caffeineUnit = "mg"
-    @Published var waterTrend: SummaryCard.TrendDirection?
-    @Published var caffeineTrend: SummaryCard.TrendDirection?
-    @Published var consistencyTrend: SummaryCard.TrendDirection?
+    @Published var waterTrend: TrendDirection?
+    @Published var caffeineTrend: TrendDirection?
+    @Published var consistencyTrend: TrendDirection?
     @Published var peakIntakeTime = "N/A"
     @Published var mostActiveDay = "N/A"
     @Published var goalAchievementRate = "N/A"
@@ -105,33 +105,33 @@ class AnalyticsViewModel: ObservableObject {
             let secondHalfWater = secondHalf.reduce(0) { $0 + $1.waterAmount }
             
             if secondHalfWater > firstHalfWater * 1.1 {
-                waterTrend = .up
+                waterTrend = TrendDirection(direction: .up, percentage: ((secondHalfWater - firstHalfWater) / firstHalfWater) * 100)
             } else if secondHalfWater < firstHalfWater * 0.9 {
-                waterTrend = .down
+                waterTrend = TrendDirection(direction: .down, percentage: ((firstHalfWater - secondHalfWater) / firstHalfWater) * 100)
             } else {
-                waterTrend = .stable
+                waterTrend = TrendDirection(direction: .stable)
             }
             
             let firstHalfCaffeine = firstHalf.reduce(0) { $0 + $1.caffeineAmount }
             let secondHalfCaffeine = secondHalf.reduce(0) { $0 + $1.caffeineAmount }
             
             if secondHalfCaffeine > firstHalfCaffeine * 1.1 {
-                caffeineTrend = .up
+                caffeineTrend = TrendDirection(direction: .up, percentage: ((secondHalfCaffeine - firstHalfCaffeine) / firstHalfCaffeine) * 100)
             } else if secondHalfCaffeine < firstHalfCaffeine * 0.9 {
-                caffeineTrend = .down
+                caffeineTrend = TrendDirection(direction: .down, percentage: ((firstHalfCaffeine - secondHalfCaffeine) / firstHalfCaffeine) * 100)
             } else {
-                caffeineTrend = .stable
+                caffeineTrend = TrendDirection(direction: .stable)
             }
             
             let firstHalfActive = firstHalf.filter { $0.waterAmount > 0 }.count
             let secondHalfActive = secondHalf.filter { $0.waterAmount > 0 }.count
             
             if secondHalfActive > firstHalfActive {
-                consistencyTrend = .up
+                consistencyTrend = TrendDirection(direction: .up)
             } else if secondHalfActive < firstHalfActive {
-                consistencyTrend = .down
+                consistencyTrend = TrendDirection(direction: .down)
             } else {
-                consistencyTrend = .stable
+                consistencyTrend = TrendDirection(direction: .stable)
             }
         }
     }
@@ -190,7 +190,7 @@ class AnalyticsViewModel: ObservableObject {
             ))
         }
         
-        if let trend = waterTrend, trend == .up {
+        if let trend = waterTrend, trend.direction == .up {
             insights.append(Insight(
                 title: "Great Progress!",
                 description: "Your water intake has been increasing. Keep up the good hydration habits!",
@@ -211,7 +211,7 @@ class AnalyticsViewModel: ObservableObject {
         }
         
         // Consistency insights
-        if consistencyTrend == .up {
+        if let trend = consistencyTrend, trend.direction == .up {
             insights.append(Insight(
                 title: "Building Consistency",
                 description: "You're tracking your intake more consistently. This is great for forming healthy habits!",
@@ -291,7 +291,8 @@ class AnalyticsViewModel: ObservableObject {
     }
 }
 
-struct Insight: Equatable {
+struct Insight: Equatable, Identifiable {
+    let id = UUID()
     let title: String
     let description: String
     let type: InsightType
@@ -305,6 +306,14 @@ struct Insight: Equatable {
             case .success: return .green
             case .warning: return .orange
             case .info: return .blue
+            }
+        }
+        
+        var rawValue: String {
+            switch self {
+            case .success: return "success"
+            case .warning: return "warning"
+            case .info: return "info"
             }
         }
     }

@@ -310,6 +310,7 @@ enum AnalyticsEvent {
     // Screen Views
     case screen_viewed
     case analytics_viewed
+    case insights_viewed
     
     // Monetization (future)
     case purchase
@@ -343,6 +344,7 @@ enum AnalyticsEvent {
         case .crash_reported: return "crash_reported"
         case .screen_viewed: return "screen_viewed"
         case .analytics_viewed: return "analytics_viewed"
+        case .insights_viewed: return "insights_viewed"
         case .purchase: return "purchase"
         case .subscription_started: return "subscription_started"
         case .subscription_cancelled: return "subscription_cancelled"
