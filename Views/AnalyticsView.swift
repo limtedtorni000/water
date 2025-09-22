@@ -45,10 +45,7 @@ struct AnalyticsView: View {
                 
                 ScrollView {
                     VStack(spacing: 40) {
-                        // Header with time selector
-                        headerSection
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
+                        // Start directly with summary section
                         
                         // Summary cards with improved design
                         summarySection
@@ -130,76 +127,7 @@ struct AnalyticsView: View {
         }
     }
     
-    // MARK: - Header Section
-    private var headerSection: some View {
-        VStack(spacing: 24) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Your")
-                        .font(.title3)
-                        .foregroundColor(Color.secondary)
-                        .fontWeight(.medium)
-                    
-                    Text("Hydration Journey")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .foregroundColor(Color.primary)
-                        .lineLimit(1)
-                }
-                
-                Spacer()
-                
-                // Time range selector
-                HStack(spacing: 6) {
-                    ForEach(TimeRange.allCases, id: \.self) { range in
-                        Button(action: {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                selectedTimeRange = range
-                            }
-                        }) {
-                            VStack(spacing: 6) {
-                                Image(systemName: range.icon)
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .symbolRenderingMode(.hierarchical)
-                                
-                                Text(range.rawValue)
-                                    .font(.system(size: 12, weight: .semibold))
-                                    .textCase(.uppercase)
-                                    .tracking(0.5)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14)
-                                    .fill(selectedTimeRange == range ? 
-                                          AnyShapeStyle(
-                                            LinearGradient(
-                                                colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                          ) : 
-                                          AnyShapeStyle(Color.clear)
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(selectedTimeRange == range ? Color.waterBlue : Color.clear, lineWidth: 2)
-                                    )
-                            )
-                            .scaleEffect(selectedTimeRange == range ? 1.03 : 1.0)
-                            .shadow(color: selectedTimeRange == range ? Color.waterBlue.opacity(0.25) : .clear, 
-                                   radius: selectedTimeRange == range ? 6 : 0, 
-                                   x: 0, 
-                                   y: selectedTimeRange == range ? 3 : 0)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-                .frame(maxWidth: 280)
-            }
-        }
-        .padding(.bottom, 8)
-    }
-    
+        
     // MARK: - Summary Section
     private var summarySection: some View {
         VStack(spacing: 24) {
@@ -211,27 +139,57 @@ struct AnalyticsView: View {
                 
                 Spacer()
                 
-                HStack(spacing: 6) {
-                    Image(systemName: selectedTimeRange.icon)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.waterBlue)
-                    
-                    Text(selectedTimeRange.rawValue)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.waterBlue)
-                        .textCase(.uppercase)
-                        .tracking(0.5)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-                .background(
-                    LinearGradient(
-                        colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                Menu {
+                    ForEach(TimeRange.allCases, id: \.self) { range in
+                        Button(action: {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                selectedTimeRange = range
+                            }
+                        }) {
+                            HStack {
+                                Image(systemName: range.icon)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(range == selectedTimeRange ? .waterBlue : .primary)
+                                
+                                Text(range.rawValue)
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(range == selectedTimeRange ? .waterBlue : .primary)
+                                
+                                if range == selectedTimeRange {
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.waterBlue)
+                                }
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: selectedTimeRange.icon)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.waterBlue)
+                        
+                        Text(selectedTimeRange.rawValue)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.waterBlue)
+                            .textCase(.uppercase)
+                            .tracking(0.5)
+                        
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 10, weight: .semibold))
+                            .foregroundColor(.waterBlue)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .clipShape(Capsule())
+                    .clipShape(Capsule())
+                }
             }
             
             LazyVGrid(columns: [
