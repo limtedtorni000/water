@@ -20,7 +20,7 @@ struct ModernCard<Content: View>: View {
             .padding(padding)
             .background(
                 RoundedRectangle(cornerRadius: 24, style: .continuous)
-                    .fill(Color(UIColor.systemBackground))
+                    .fill(.regularMaterial)
                     .shadow(
                         color: style.shadowColor,
                         radius: style.shadowRadius,

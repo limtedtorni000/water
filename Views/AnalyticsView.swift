@@ -203,7 +203,7 @@ struct AnalyticsView: View {
                     title: "WATER",
                     value: String(format: "%.0f", viewModel.totalWater),
                     unit: viewModel.waterUnit,
-                    color: .blue,
+                    color: Color(red: 0.0, green: 0.5, blue: 1.0),
                     trend: viewModel.waterTrend,
                     icon: "drop.fill",
                     viscosity: 0.8,
@@ -216,7 +216,7 @@ struct AnalyticsView: View {
                     title: "CAFFEINE",
                     value: String(format: "%.0f", viewModel.totalCaffeine),
                     unit: viewModel.caffeineUnit,
-                    color: .brown,
+                    color: Color(red: 0.7, green: 0.3, blue: 0.5),
                     trend: viewModel.caffeineTrend,
                     icon: "mug.fill",
                     viscosity: 0.6,
@@ -713,7 +713,11 @@ struct LiquidCard: View {
     
     var body: some View {
         ZStack {
-            // Liquid background
+            // Background that adapts to light/dark mode
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color(UIColor.systemBackground))
+            
+            // Liquid background with enhanced colors
             liquidBackground
             
             // Surface waves
@@ -745,16 +749,19 @@ struct LiquidCard: View {
     }
     
     private var liquidBackground: some View {
-        RadialGradient(
-            colors: [
-                color.opacity(0.8),
-                color.opacity(0.4),
-                color.opacity(0.2)
-            ],
-            center: .center,
-            startRadius: 0,
-            endRadius: 150
-        )
+        ZStack {
+            // Vibrant gradient that works in both light and dark modes
+            RadialGradient(
+                colors: [
+                    color,
+                    color.opacity(0.7),
+                    color.opacity(0.4)
+                ],
+                center: .center,
+                startRadius: 0,
+                endRadius: 150
+            )
+        }
     }
     
     private var surfaceView: some View {
@@ -775,7 +782,7 @@ struct LiquidCard: View {
             path.addLine(to: CGPoint(x: 0, y: 200))
             path.closeSubpath()
         }
-        .fill(color.opacity(0.3))
+        .fill(color.opacity(0.5))
         .offset(y: 50)
     }
     
@@ -789,9 +796,9 @@ struct LiquidCard: View {
                     .fill(
                         .linearGradient(
                             colors: [
-                                color.opacity(0.6),
-                                color.opacity(0.4),
-                                color.opacity(0.7)
+                                color.opacity(0.9),
+                                color.opacity(0.7),
+                                color.opacity(0.8)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -875,9 +882,9 @@ struct LiquidCard: View {
         .padding(16)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            // Ensure text area has solid background
+            // Adaptive text background for both light and dark modes
             Rectangle()
-                .fill(.black.opacity(0.2))
+                .fill(.ultraThinMaterial)
                 .cornerRadius(12)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
