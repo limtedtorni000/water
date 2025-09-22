@@ -194,34 +194,28 @@ struct AnalyticsView: View {
             
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 16),
-                GridItem(.flexible(), spacing: 16),
                 GridItem(.flexible(), spacing: 16)
             ], spacing: 16) {
-                EnhancedSummaryCard(
-                    title: "Water",
+                LiquidCard(
+                    title: "WATER",
                     value: String(format: "%.0f", viewModel.totalWater),
                     unit: viewModel.waterUnit,
-                    color: .waterBlue,
+                    color: .blue,
                     trend: viewModel.waterTrend,
-                    icon: "drop.fill"
+                    icon: "drop.fill",
+                    viscosity: 0.8,
+                    temperature: .cool
                 )
                 
-                EnhancedSummaryCard(
-                    title: "Caffeine",
+                LiquidCard(
+                    title: "CAFFEINE",
                     value: String(format: "%.0f", viewModel.totalCaffeine),
                     unit: viewModel.caffeineUnit,
-                    color: .caffeineBrown,
+                    color: .brown,
                     trend: viewModel.caffeineTrend,
-                    icon: "mug.fill"
-                )
-                
-                EnhancedSummaryCard(
-                    title: "Active Days",
-                    value: "\(viewModel.activeDays)",
-                    unit: "days",
-                    color: .purple,
-                    trend: viewModel.consistencyTrend,
-                    icon: "calendar.badge.checkmark"
+                    icon: "mug.fill",
+                    viscosity: 0.6,
+                    temperature: .warm
                 )
             }
         }
@@ -669,92 +663,382 @@ struct AnalyticsView: View {
     }
 }
 
-// MARK: - Enhanced UI Components
-struct EnhancedSummaryCard: View {
+// MARK: - Liquid Card Implementation
+struct LiquidCard: View {
     let title: String
     let value: String
-    let unit: String?
+    let unit: String
     let color: Color
     let trend: TrendDirection?
     let icon: String
+    let viscosity: Double // 0.0 to 1.0 (water to honey)
+    let temperature: LiquidTemperature
+    
+    @State private var blobPhase = 0.0
+    @State private var surfaceWave = 0.0
+    @State private var dropletOffset = 0.0
+    @State private var mercuryLevel: CGFloat = 0.0
+    @State private var rippleCenter = CGPoint.zero
+    @State private var rippleRadius: CGFloat = 0.0
+    @State private var isAnimating = false
+    
+    enum LiquidTemperature {
+        case cool, neutral, warm
+        
+        var baseColor: Color {
+            switch self {
+            case .cool: return .blue
+            case .neutral: return .gray
+            case .warm: return .orange
+            }
+        }
+        
+        var animationSpeed: Double {
+            switch self {
+            case .cool: return 2.0
+            case .neutral: return 1.5
+            case .warm: return 1.0
+            }
+        }
+    }
     
     var body: some View {
-        ModernCard(
-            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
-        ) {
-            VStack(spacing: 16) {
-                // Icon and title
-                HStack {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [color.opacity(0.2), color.opacity(0.05)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 36, height: 36)
-                            .shadow(color: color.opacity(0.2), radius: 3, x: 0, y: 1)
-                        
-                        Image(systemName: icon)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(color)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                    
-                    Spacer()
-                    
-                    if let trend = trend {
-                        HStack(spacing: 4) {
-                            Image(systemName: trend.icon)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(trend.color)
-                            
-                            Text(trend.rawValue)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            LinearGradient(
-                                colors: [trend.color.opacity(0.15), trend.color.opacity(0.05)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .clipShape(Capsule())
-                    }
+        ZStack {
+            // Liquid background
+            liquidBackground
+            
+            // Surface waves
+            surfaceView
+            
+            // Mercury/liquid level
+            mercuryView
+            
+            // Floating droplets
+            dropletsView
+            
+            // Ripple effects
+            rippleView
+            
+            // Content
+            contentView
+                .onTapGesture { location in
+                    createRipple(at: location)
                 }
-                
-                // Value
-                VStack(spacing: 6) {
-                    Text(value)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundColor(.primary)
-                        .contentTransition(.numericText())
-                    
-                    if let unit = unit {
-                        Text(unit)
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.secondary)
-                            .textCase(.uppercase)
-                            .tracking(0.8)
-                    }
-                }
-                
-                // Title
-                Text(title)
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.primary)
-                    
-                // Fixed height spacer for consistency
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(height: 180)
+        .frame(height: 220)
+        .clipShape(LiquidShape(phase: blobPhase, viscosity: viscosity))
+        .onAppear(perform: animateCard)
+    }
+    
+    private var liquidBackground: some View {
+        RadialGradient(
+            colors: [
+                color.opacity(0.8),
+                color.opacity(0.4),
+                color.opacity(0.2)
+            ],
+            center: .center,
+            startRadius: 0,
+            endRadius: 150
+        )
+    }
+    
+    private var surfaceView: some View {
+        Path { path in
+            let width: CGFloat = 400
+            let height: CGFloat = 100
+            let amplitude = 10.0
+            let frequency = 0.02
+            
+            path.move(to: CGPoint(x: 0, y: height))
+            
+            for x in stride(from: 0, through: width, by: 1) {
+                let y = height + sin((Double(x) * frequency) + surfaceWave) * amplitude
+                path.addLine(to: CGPoint(x: x, y: y))
+            }
+            
+            path.addLine(to: CGPoint(x: width, y: 200))
+            path.addLine(to: CGPoint(x: 0, y: 200))
+            path.closeSubpath()
+        }
+        .fill(color.opacity(0.3))
+        .offset(y: 50)
+    }
+    
+    private var mercuryView: some View {
+        VStack(spacing: 0) {
+            Spacer()
+            
+            ZStack {
+                // Mercury pool - reduced height
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        .linearGradient(
+                            colors: [
+                                color.opacity(0.6),
+                                color.opacity(0.4),
+                                color.opacity(0.7)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(height: mercuryLevel * 60)
+                
+                // Mercury surface shimmer
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(
+                        .linearGradient(
+                            colors: [
+                                .white.opacity(0.4),
+                                .white.opacity(0.1),
+                                .clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(height: 15)
+                    .offset(y: -mercuryLevel * 25)
+            }
+        }
+        .opacity(0.7)
+    }
+    
+    private var dropletsView: some View {
+        ZStack {
+            ForEach(0..<8, id: \.self) { i in
+                Circle()
+                    .fill(color.opacity(0.6))
+                    .frame(
+                        width: 8 + sin(blobPhase + Double(i)) * 4,
+                        height: 8 + sin(blobPhase + Double(i)) * 4
+                    )
+                    .offset(
+                        x: sin(blobPhase + Double(i) * 0.5) * 150,
+                        y: dropletOffset + Double(i) * 25
+                    )
+                    .opacity(0.6)
+            }
+        }
+    }
+    
+    private var rippleView: some View {
+        ZStack {
+            ForEach(0..<3, id: \.self) { i in
+                Circle()
+                    .stroke(color.opacity(0.4), lineWidth: 2)
+                    .frame(width: rippleRadius * CGFloat(i + 1), height: rippleRadius * CGFloat(i + 1))
+                    .scaleEffect(rippleRadius > 0 ? 1 : 0)
+                    .opacity(rippleRadius > 0 ? (1.0 - (rippleRadius / 200)) : 0)
+            }
+        }
+        .position(rippleCenter)
+    }
+    
+    private var contentView: some View {
+        VStack(spacing: 12) {
+            headerView
+            
+            Spacer()
+            
+            valueView
+                .zIndex(1)
+            
+            Spacer(minLength: 4)
+            
+            trendView
+                .zIndex(1)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            // Ensure text area has solid background
+            Rectangle()
+                .fill(.black.opacity(0.2))
+                .cornerRadius(12)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+        )
+    }
+    
+    private var headerView: some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 13, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(color.opacity(0.3))
+                        .overlay(
+                            Capsule()
+                                .stroke(.white.opacity(0.5), lineWidth: 0.5)
+                        )
+                )
+            
+            Spacer(minLength: 8)
+            
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(.white)
+                .frame(width: 32, height: 32)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.4))
+                )
+        }
+    }
+    
+    private var valueView: some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.system(size: 42, weight: .thin, design: .rounded))
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+                .shadow(
+                    color: .black.opacity(0.3),
+                    radius: 4,
+                    x: 0,
+                    y: 2
+                )
+            
+            Text(unit)
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .foregroundColor(.white.opacity(0.8))
+                .textCase(.uppercase)
+                .tracking(1.5)
+        }
+    }
+    
+    private var trendView: some View {
+        HStack(spacing: 8) {
+            if let trend = trend {
+                Image(systemName: trend.direction.icon)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                Text(trend.rawValue)
+                    .font(.system(size: 12, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+            }
+            
+            Spacer()
+            
+            // Viscosity indicator
+            HStack(spacing: 2) {
+                ForEach(0..<5, id: \.self) { i in
+                    Circle()
+                        .fill(i < Int(viscosity * 5) ? .white : .white.opacity(0.3))
+                        .frame(width: 4, height: 4)
+                }
+            }
+        }
+    }
+    
+    private func animateCard() {
+        isAnimating = true
+        
+        // Blob morphing
+        withAnimation(.easeInOut(duration: temperature.animationSpeed).repeatForever(autoreverses: true)) {
+            blobPhase = .pi * 2
+        }
+        
+        // Surface waves
+        withAnimation(.linear(duration: 3).repeatForever(autoreverses: false)) {
+            surfaceWave = .pi * 2
+        }
+        
+        // Mercury fill
+        withAnimation(.spring(response: 2.0, dampingFraction: 0.7)) {
+            mercuryLevel = 1.0
+        }
+        
+        // Droplet animation
+        withAnimation(.easeInOut(duration: 4).delay(1).repeatForever(autoreverses: false)) {
+            dropletOffset = -200
+        }
+    }
+    
+    private func createRipple(at location: CGPoint) {
+        rippleCenter = location
+        rippleRadius = 0.0
+        
+        withAnimation(.easeOut(duration: 1.0)) {
+            rippleRadius = 100.0
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            rippleRadius = 0.0
+        }
+    }
+}
+
+// MARK: - Liquid Shape
+struct LiquidShape: Shape {
+    var phase: Double
+    var viscosity: Double
+    
+    var animatableData: AnimatablePair<Double, Double> {
+        get { AnimatablePair(phase, viscosity) }
+        set {
+            phase = newValue.first
+            viscosity = newValue.second
+        }
+    }
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        
+        let width = rect.width
+        let height = rect.height
+        let smoothness = min(viscosity, 0.3) // Reduce deformation
+        
+        // Create a rounded rectangle with subtle blob effect
+        let cornerRadius: CGFloat = 20.0
+        let deformation = sin(phase) * 5 * smoothness
+        
+        // Top left corner
+        path.move(to: CGPoint(x: 0, y: cornerRadius + deformation))
+        
+        // Top edge with subtle wave
+        path.addCurve(
+            to: CGPoint(x: width, y: cornerRadius - deformation),
+            control1: CGPoint(x: width * 0.25, y: deformation),
+            control2: CGPoint(x: width * 0.75, y: -deformation)
+        )
+        
+        // Right edge
+        path.addLine(to: CGPoint(x: width, y: height - cornerRadius))
+        
+        // Bottom right corner
+        path.addArc(
+            center: CGPoint(x: width - cornerRadius, y: height - cornerRadius),
+            radius: cornerRadius,
+            startAngle: .degrees(0),
+            endAngle: .degrees(90),
+            clockwise: false
+        )
+        
+        // Bottom edge
+        path.addLine(to: CGPoint(x: cornerRadius, y: height))
+        
+        // Bottom left corner
+        path.addArc(
+            center: CGPoint(x: cornerRadius, y: height - cornerRadius),
+            radius: cornerRadius,
+            startAngle: .degrees(90),
+            endAngle: .degrees(180),
+            clockwise: false
+        )
+        
+        // Left edge
+        path.addLine(to: CGPoint(x: 0, y: cornerRadius + deformation))
+        
+        return path
     }
 }
   
