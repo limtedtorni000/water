@@ -14,11 +14,11 @@ struct HomeView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background gradient
+                // Background gradient with custom dark mode color
                 LinearGradient(
                     colors: [
-                        Color(UIColor.systemGroupedBackground),
-                        Color(UIColor.secondarySystemGroupedBackground)
+                        Color(red: 0.1, green: 0.1, blue: 0.15),
+                        Color(red: 0.05, green: 0.05, blue: 0.1)
                     ],
                     startPoint: .top,
                     endPoint: .bottom

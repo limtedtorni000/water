@@ -6,8 +6,20 @@ struct InsightsView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
+            ZStack {
+                // Background gradient with custom dark mode color
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.1, green: 0.1, blue: 0.15),
+                        Color(red: 0.05, green: 0.05, blue: 0.1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(spacing: 20) {
                     ForEach(insights.indices, id: \.self) { index in
                         InsightDetailView(insight: insights[index])
                             .transition(.asymmetric(
@@ -36,6 +48,7 @@ struct InsightsView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: insights)
+            }
         }
     }
 }
