@@ -132,16 +132,16 @@ struct AnalyticsView: View {
     
     // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 32) {
-            HStack {
-                VStack(alignment: .leading, spacing: 8) {
+        VStack(spacing: 24) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Your")
                         .font(.title3)
                         .foregroundColor(Color.secondary)
                         .fontWeight(.medium)
                     
                     Text("Hydration Journey")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundColor(Color.primary)
                         .lineLimit(1)
                 }
@@ -149,27 +149,27 @@ struct AnalyticsView: View {
                 Spacer()
                 
                 // Time range selector
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     ForEach(TimeRange.allCases, id: \.self) { range in
                         Button(action: {
                             withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 selectedTimeRange = range
                             }
                         }) {
-                            VStack(spacing: 8) {
+                            VStack(spacing: 6) {
                                 Image(systemName: range.icon)
-                                    .font(.system(size: 22, weight: .semibold))
+                                    .font(.system(size: 20, weight: .semibold))
                                     .symbolRenderingMode(.hierarchical)
                                 
                                 Text(range.rawValue)
-                                    .font(.system(size: 13, weight: .semibold))
+                                    .font(.system(size: 12, weight: .semibold))
                                     .textCase(.uppercase)
-                                    .tracking(0.6)
+                                    .tracking(0.5)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 20)
+                            .padding(.vertical, 16)
                             .background(
-                                RoundedRectangle(cornerRadius: 16)
+                                RoundedRectangle(cornerRadius: 14)
                                     .fill(selectedTimeRange == range ? 
                                           AnyShapeStyle(
                                             LinearGradient(
@@ -181,20 +181,20 @@ struct AnalyticsView: View {
                                           AnyShapeStyle(Color.clear)
                                     )
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
+                                        RoundedRectangle(cornerRadius: 14)
                                             .stroke(selectedTimeRange == range ? Color.waterBlue : Color.clear, lineWidth: 2)
                                     )
                             )
-                            .scaleEffect(selectedTimeRange == range ? 1.05 : 1.0)
-                            .shadow(color: selectedTimeRange == range ? Color.waterBlue.opacity(0.3) : .clear, 
-                                   radius: selectedTimeRange == range ? 8 : 0, 
+                            .scaleEffect(selectedTimeRange == range ? 1.03 : 1.0)
+                            .shadow(color: selectedTimeRange == range ? Color.waterBlue.opacity(0.25) : .clear, 
+                                   radius: selectedTimeRange == range ? 6 : 0, 
                                    x: 0, 
-                                   y: selectedTimeRange == range ? 4 : 0)
+                                   y: selectedTimeRange == range ? 3 : 0)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .frame(maxWidth: 320)
+                .frame(maxWidth: 280)
             }
         }
         .padding(.bottom, 8)
@@ -213,17 +213,17 @@ struct AnalyticsView: View {
                 
                 HStack(spacing: 6) {
                     Image(systemName: selectedTimeRange.icon)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.waterBlue)
                     
                     Text(selectedTimeRange.rawValue)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(.waterBlue)
                         .textCase(.uppercase)
                         .tracking(0.5)
                 }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
                 .background(
                     LinearGradient(
                         colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
@@ -750,15 +750,15 @@ struct EnhancedSummaryCard: View {
                     if let trend = trend {
                         HStack(spacing: 4) {
                             Image(systemName: trend.icon)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 10, weight: .semibold))
                                 .foregroundColor(trend.color)
                             
                             Text(trend.rawValue)
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: 10, weight: .semibold))
                                 .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
                         .background(
                             LinearGradient(
                                 colors: [trend.color.opacity(0.15), trend.color.opacity(0.05)],
@@ -790,11 +790,16 @@ struct EnhancedSummaryCard: View {
                 Text(title)
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.primary)
+                    
+                // Fixed height spacer for consistency
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .frame(height: 180)
     }
 }
-
+  
 struct TrendDirection: Hashable {
     enum Direction {
         case up, down, stable
