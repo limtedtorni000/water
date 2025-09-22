@@ -303,9 +303,9 @@ struct Insight: Equatable, Identifiable {
         
         var color: Color {
             switch self {
-            case .success: return .green
-            case .warning: return .orange
-            case .info: return .blue
+            case .success: return .successGreen
+            case .warning: return .warningRed
+            case .info: return .infoBlue
             }
         }
         

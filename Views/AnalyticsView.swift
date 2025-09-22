@@ -35,8 +35,8 @@ struct AnalyticsView: View {
                 // Background gradient
                 LinearGradient(
                     colors: [
-                        Color(UIColor.systemGroupedBackground),
-                        Color(UIColor.secondarySystemGroupedBackground)
+                        Color(UIColor.systemBackground),
+                        Color(UIColor.systemGroupedBackground)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -44,9 +44,10 @@ struct AnalyticsView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 28) {
+                    VStack(spacing: 48) {
                         // Header with time selector
                         headerSection
+                            .padding(.horizontal, 6)
                         
                         // Summary cards with improved design
                         summarySection
@@ -66,20 +67,25 @@ struct AnalyticsView: View {
                         // Achievements showcase
                         achievementsSection
                         
-                        Spacer(minLength: 100)
+                        Spacer(minLength: 200)
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 28)
                     .padding(.top, 8)
+                    .padding(.bottom, 24)
                 }
             }
-            .navigationTitle("Analytics")
+            .navigationTitle("Hydration Analytics")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingInsights = true }) {
+                    Button(action: { 
+                        showingInsights = true
+                        AnalyticsService.shared.trackEvent(.insights_viewed)
+                    }) {
                         Image(systemName: "lightbulb.circle.fill")
                             .font(.title3)
                             .foregroundColor(.waterBlue)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }
@@ -88,16 +94,19 @@ struct AnalyticsView: View {
             }
             .onAppear {
                 viewModel.loadData(for: selectedTimeRange)
-                withAnimation(.easeInOut(duration: 0.8).delay(0.2)) {
+                AnalyticsService.shared.trackScreen("User Analytics")
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
                     animateCharts = true
                 }
             }
             .onChange(of: selectedTimeRange) { _, _ in
                 viewModel.loadData(for: selectedTimeRange)
-                withAnimation(.easeInOut(duration: 0.5)) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     animateCharts = false
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        animateCharts = true
+                        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.2)) {
+                            animateCharts = true
+                        }
                     }
                 }
             }
@@ -106,17 +115,18 @@ struct AnalyticsView: View {
     
     // MARK: - Header Section
     private var headerSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 32) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 8) {
                     Text("Your")
-                        .font(.title2)
-                        .foregroundColor(.secondary)
+                        .font(.title3)
+                        .foregroundColor(Color.secondary)
+                        .fontWeight(.medium)
                     
                     Text("Hydration Journey")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundColor(.primary)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .foregroundColor(Color.primary)
+                        .lineLimit(1)
                 }
                 
                 Spacer()
@@ -125,34 +135,49 @@ struct AnalyticsView: View {
                 HStack(spacing: 8) {
                     ForEach(TimeRange.allCases, id: \.self) { range in
                         Button(action: {
-                            withAnimation(.easeInOut(duration: 0.3)) {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                                 selectedTimeRange = range
                             }
                         }) {
-                            VStack(spacing: 4) {
+                            VStack(spacing: 8) {
                                 Image(systemName: range.icon)
-                                    .font(.system(size: 18, weight: .medium))
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .symbolRenderingMode(.hierarchical)
                                 
                                 Text(range.rawValue)
-                                    .font(.caption2)
-                                    .fontWeight(.semibold)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .textCase(.uppercase)
+                                    .tracking(0.6)
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+                            .padding(.vertical, 20)
                             .background(
-                                RoundedRectangle(cornerRadius: 12)
-                                    .fill(selectedTimeRange == range ? Color.waterBlue.opacity(0.15) : Color.clear)
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(selectedTimeRange == range ? 
+                                          AnyShapeStyle(
+                                            LinearGradient(
+                                                colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                          ) : 
+                                          AnyShapeStyle(Color.clear)
+                                    )
                                     .overlay(
-                                        RoundedRectangle(cornerRadius: 12)
+                                        RoundedRectangle(cornerRadius: 16)
                                             .stroke(selectedTimeRange == range ? Color.waterBlue : Color.clear, lineWidth: 2)
                                     )
                             )
                             .scaleEffect(selectedTimeRange == range ? 1.05 : 1.0)
+                            .shadow(color: selectedTimeRange == range ? Color.waterBlue.opacity(0.3) : .clear, 
+                                   radius: selectedTimeRange == range ? 8 : 0, 
+                                   x: 0, 
+                                   y: selectedTimeRange == range ? 4 : 0)
                         }
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-                .frame(maxWidth: 280)
+                .frame(maxWidth: 320)
             }
         }
         .padding(.bottom, 8)
@@ -160,29 +185,43 @@ struct AnalyticsView: View {
     
     // MARK: - Summary Section
     private var summarySection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 32) {
             HStack {
                 Text("Overview")
                     .font(.title2)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
+                    .foregroundColor(Color.primary)
                 
                 Spacer()
                 
-                Text(selectedTimeRange.rawValue)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
-                    .background(Color.secondary.opacity(0.1))
-                    .clipShape(Capsule())
+                HStack(spacing: 6) {
+                    Image(systemName: selectedTimeRange.icon)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.waterBlue)
+                    
+                    Text(selectedTimeRange.rawValue)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.waterBlue)
+                        .textCase(.uppercase)
+                        .tracking(0.5)
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+                .background(
+                    LinearGradient(
+                        colors: [Color.waterLight, Color.waterBlue.opacity(0.03)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(Capsule())
             }
             
             LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 16) {
+                GridItem(.flexible(), spacing: 20),
+                GridItem(.flexible(), spacing: 20),
+                GridItem(.flexible(), spacing: 20)
+            ], spacing: 20) {
                 EnhancedSummaryCard(
                     title: "Water",
                     value: String(format: "%.0f", viewModel.totalWater),
@@ -215,13 +254,23 @@ struct AnalyticsView: View {
     
     // MARK: - Charts Section
     private var chartsSection: some View {
-        VStack(spacing: 24) {
-            Text("Consumption Patterns")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 40) {
+            HStack {
+                Text("Consumption Patterns")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Image(systemName: "chart.xyaxis.line")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
-            VStack(spacing: 20) {
+            VStack(spacing: 32) {
                 // Water chart with animation
                 EnhancedChartCard(
                     title: "Water Intake",
@@ -321,69 +370,95 @@ struct AnalyticsView: View {
     
     // MARK: - Patterns Section
     private var patternsSection: some View {
-        VStack(spacing: 20) {
-            Text("Habit Insights")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 36) {
+            HStack {
+                Text("Habit Insights")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.secondary)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 16) {
-                EnhancedPatternCard(
-                    icon: "clock.fill",
-                    title: "Peak Time",
-                    value: viewModel.peakIntakeTime,
-                    subtitle: "When you drink most",
-                    color: .blue,
-                    unit: nil
-                )
-                
-                EnhancedPatternCard(
-                    icon: "calendar.badge.clock",
-                    title: "Active Day",
-                    value: viewModel.mostActiveDay,
-                    subtitle: "Your most consistent day",
-                    color: .purple,
-                    unit: nil
-                )
-                
-                EnhancedPatternCard(
-                    icon: "target",
-                    title: "Goal Rate",
-                    value: viewModel.goalAchievementRate,
-                    subtitle: "Achievement success",
-                    color: .green,
-                    unit: nil
-                )
-                
-                EnhancedPatternCard(
-                    icon: "chart.line.uptrend.xyaxis",
-                    title: "Average",
-                    value: String(format: "%.0f", viewModel.weeklyAverageWater),
-                    subtitle: "Daily average water",
-                    color: .orange,
-                    unit: viewModel.waterUnit
-                )
+            ], spacing: 20) {
+                ForEach(0..<4, id: \.self) { index in
+                    Group {
+                        if index == 0 {
+                            EnhancedPatternCard(
+                                icon: "clock.fill",
+                                title: "Peak Time",
+                                value: viewModel.peakIntakeTime,
+                                subtitle: "When you drink most",
+                                color: .blue,
+                                unit: nil
+                            )
+                        } else if index == 1 {
+                            EnhancedPatternCard(
+                                icon: "calendar.badge.clock",
+                                title: "Active Day",
+                                value: viewModel.mostActiveDay,
+                                subtitle: "Your most consistent day",
+                                color: .purple,
+                                unit: nil
+                            )
+                        } else if index == 2 {
+                            EnhancedPatternCard(
+                                icon: "target",
+                                title: "Goal Rate",
+                                value: viewModel.goalAchievementRate,
+                                subtitle: "Achievement success",
+                                color: .green,
+                                unit: nil
+                            )
+                        } else {
+                            EnhancedPatternCard(
+                                icon: "chart.line.uptrend.xyaxis",
+                                title: "Average",
+                                value: String(format: "%.0f", viewModel.weeklyAverageWater),
+                                subtitle: "Daily average water",
+                                color: .orange,
+                                unit: viewModel.waterUnit
+                            )
+                        }
+                    }
+                }
             }
         }
     }
     
     // MARK: - Weekly Highlights Section
     private var weeklyHighlightsSection: some View {
-        VStack(spacing: 20) {
-            Text("Weekly Highlights")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(spacing: 36) {
+            HStack {
+                Text("Weekly Highlights")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Image(systemName: "star.circle.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .symbolRenderingMode(.hierarchical)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             ModernCard(
-                padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+                padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
             ) {
-                VStack(spacing: 16) {
+                VStack(spacing: 20) {
                     HStack {
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("Best Day")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -398,7 +473,7 @@ struct AnalyticsView: View {
                         
                         Spacer()
                         
-                        VStack(alignment: .trailing, spacing: 4) {
+                        VStack(alignment: .trailing, spacing: 8) {
                             Text("Streak")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -415,7 +490,7 @@ struct AnalyticsView: View {
                     Divider()
                     
                     HStack {
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: 8) {
                             Text("This Week's Goal")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -435,11 +510,12 @@ struct AnalyticsView: View {
     }
     
     private var insightsSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 32) {
             HStack {
                 Text("AI Insights")
                     .font(.title2)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 
                 Spacer()
                 
@@ -456,18 +532,24 @@ struct AnalyticsView: View {
                             .font(.system(size: 14))
                             .foregroundColor(.waterBlue)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.waterBlue.opacity(0.1))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.waterBlue.opacity(0.15), Color.waterBlue.opacity(0.05)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .clipShape(Capsule())
                 }
             }
             
             if viewModel.insights.isEmpty {
                 ModernCard(
-                    padding: EdgeInsets(top: 32, leading: 20, bottom: 32, trailing: 20)
+                    padding: EdgeInsets(top: 40, leading: 24, bottom: 40, trailing: 24)
                 ) {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         Image(systemName: "lightbulb.slash")
                             .font(.system(size: 48))
                             .foregroundColor(.secondary.opacity(0.6))
@@ -486,9 +568,9 @@ struct AnalyticsView: View {
             } else {
                 // Top insights grid
                 LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 16) {
+                    GridItem(.flexible(), spacing: 20),
+                    GridItem(.flexible(), spacing: 20)
+                ], spacing: 20) {
                     ForEach(viewModel.insights.prefix(2)) { insight in
                         EnhancedInsightCard(insight: insight)
                     }
@@ -498,28 +580,41 @@ struct AnalyticsView: View {
     }
     
     private var achievementsSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 32) {
             HStack {
                 Text("Achievements")
                     .font(.title2)
-                    .fontWeight(.semibold)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
                 
                 Spacer()
                 
-                Text("\(viewModel.achievements.filter { $0.unlocked }.count)/\(viewModel.achievements.count)")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color.secondary.opacity(0.1))
-                    .clipShape(Capsule())
+                HStack(spacing: 4) {
+                    Image(systemName: "trophy.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.orange)
+                    
+                    Text("\(viewModel.achievements.filter { $0.unlocked }.count)/\(viewModel.achievements.count)")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.orange)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    LinearGradient(
+                        colors: [Color.orange.opacity(0.2), Color.orange.opacity(0.05)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(Capsule())
             }
             
             if viewModel.achievements.isEmpty {
                 ModernCard(
-                    padding: EdgeInsets(top: 32, leading: 20, bottom: 32, trailing: 20)
+                    padding: EdgeInsets(top: 40, leading: 24, bottom: 40, trailing: 24)
                 ) {
-                    VStack(spacing: 16) {
+                    VStack(spacing: 20) {
                         Image(systemName: "trophy")
                             .font(.system(size: 48))
                             .foregroundColor(.secondary.opacity(0.6))
@@ -541,7 +636,7 @@ struct AnalyticsView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible()),
                     GridItem(.flexible())
-                ], spacing: 12) {
+                ], spacing: 20) {
                     ForEach(viewModel.achievements.prefix(6)) { achievement in
                         EnhancedAchievementCard(achievement: achievement)
                     }
@@ -610,19 +705,27 @@ struct EnhancedSummaryCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+            padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
         ) {
-            VStack(spacing: 12) {
+            VStack(spacing: 20) {
                 // Icon and title
                 HStack {
                     ZStack {
                         Circle()
-                            .fill(color.opacity(0.15))
-                            .frame(width: 36, height: 36)
+                            .fill(
+                                LinearGradient(
+                                    colors: [color.opacity(0.2), color.opacity(0.05)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 40, height: 40)
+                            .shadow(color: color.opacity(0.2), radius: 4, x: 0, y: 2)
                         
                         Image(systemName: icon)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 20, weight: .semibold))
                             .foregroundColor(color)
+                            .symbolRenderingMode(.hierarchical)
                     }
                     
                     Spacer()
@@ -630,39 +733,45 @@ struct EnhancedSummaryCard: View {
                     if let trend = trend {
                         HStack(spacing: 4) {
                             Image(systemName: trend.icon)
-                                .font(.caption2)
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(trend.color)
                             
                             Text(trend.rawValue)
-                                .font(.caption2)
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(.secondary)
                         }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(trend.color.opacity(0.1))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(
+                            LinearGradient(
+                                colors: [trend.color.opacity(0.15), trend.color.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .clipShape(Capsule())
                     }
                 }
                 
                 // Value
-                VStack(spacing: 4) {
+                VStack(spacing: 8) {
                     Text(value)
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
                     
                     if let unit = unit {
                         Text(unit)
-                            .font(.system(size: 13, weight: .medium))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.secondary)
                             .textCase(.uppercase)
-                            .tracking(0.5)
+                            .tracking(0.8)
                     }
                 }
                 
                 // Title
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.primary)
             }
         }
@@ -733,9 +842,9 @@ struct EnhancedChartCard<Content: View>: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+            padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
         ) {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 20) {
                 // Header
                 HStack {
                     ZStack {
@@ -783,44 +892,64 @@ struct EnhancedPatternCard: View {
             padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
         ) {
             VStack(spacing: 12) {
-                // Icon
+                // Icon - fixed height
                 ZStack {
                     Circle()
-                        .fill(color.opacity(0.15))
+                        .fill(
+                            LinearGradient(
+                                colors: [color.opacity(0.2), color.opacity(0.05)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .frame(width: 44, height: 44)
+                        .shadow(color: color.opacity(0.2), radius: 4, x: 0, y: 2)
                     
                     Image(systemName: icon)
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(color)
+                        .symbolRenderingMode(.hierarchical)
                 }
+                .frame(height: 44)
                 
-                // Value
-                VStack(spacing: 2) {
+                // Value - fixed height
+                VStack(spacing: 3) {
                     Text(value)
                         .font(.system(size: 24, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
+                        .lineLimit(1)
                     
                     if let unit = unit {
                         Text(unit)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.secondary)
                             .textCase(.uppercase)
+                            .tracking(0.8)
                     }
                 }
+                .frame(height: unit != nil ? 40 : 28)
                 
-                // Title and subtitle
-                VStack(spacing: 4) {
+                // Title and subtitle - fixed height
+                VStack(spacing: 3) {
                     Text(title)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.system(size: 14, weight: .bold))
                         .foregroundColor(.primary)
+                        .lineLimit(1)
                     
                     Text(subtitle)
-                        .font(.system(size: 12))
+                        .font(.system(size: 11))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .frame(minHeight: 52, maxHeight: 52)
+                
+                Spacer(minLength: 0)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .frame(height: 180)
     }
 }
 
@@ -829,9 +958,9 @@ struct EnhancedInsightCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         ) {
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 // Icon and type
                 HStack {
                     ZStack {
@@ -908,9 +1037,9 @@ struct EnhancedAchievementCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
+            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
         ) {
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 // Icon with animation for unlocked achievements
                 ZStack {
                     Circle()
@@ -999,7 +1128,4 @@ struct AchievementBadge: View {
 
 #Preview {
     AnalyticsView()
-        .onAppear {
-            AnalyticsService.shared.trackScreen("User Analytics")
-        }
 }

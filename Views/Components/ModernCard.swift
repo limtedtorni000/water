@@ -38,8 +38,8 @@ struct ModernCard<Content: View>: View {
         
         var shadowRadius: CGFloat {
             switch self {
-            case .default: return 12
-            case .elevated: return 24
+            case .default: return 16
+            case .elevated: return 32
             case .glass: return 0
             case .flat: return 0
             }
@@ -47,8 +47,8 @@ struct ModernCard<Content: View>: View {
         
         var shadowColor: Color {
             switch self {
-            case .default: return .black.opacity(0.06)
-            case .elevated: return .black.opacity(0.12)
+            case .default: return .black.opacity(0.15)
+            case .elevated: return .black.opacity(0.25)
             case .glass: return .clear
             case .flat: return .clear
             }

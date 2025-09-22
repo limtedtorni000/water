@@ -89,9 +89,9 @@ struct InsightDetailView: View {
             }
         }
         .padding()
-        .background(Color.secondaryBackground)
+        .background(Color(UIColor.systemBackground))
         .cornerRadius(16)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 4)
     }
 }
 
