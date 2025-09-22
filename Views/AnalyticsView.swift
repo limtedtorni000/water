@@ -3,17 +3,19 @@ import Charts
 
 struct AnalyticsView: View {
     @StateObject private var viewModel = AnalyticsViewModel()
-    @State private var selectedTimeRange: TimeRange = .week
+    @State private var selectedTimeRange: TimeRange = .today
     @State private var showingInsights = false
     @State private var animateCharts = false
     
     enum TimeRange: String, CaseIterable {
+        case today = "Today"
         case week = "Week"
         case month = "Month"
         case year = "Year"
         
         var days: Int {
             switch self {
+            case .today: return 1
             case .week: return 7
             case .month: return 30
             case .year: return 365
@@ -22,6 +24,7 @@ struct AnalyticsView: View {
         
         var icon: String {
             switch self {
+            case .today: return "sun.max.fill"
             case .week: return "calendar.badge.clock"
             case .month: return "calendar.badge.month"
             case .year: return "calendar.badge.year"
@@ -204,7 +207,9 @@ struct AnalyticsView: View {
                     trend: viewModel.waterTrend,
                     icon: "drop.fill",
                     viscosity: 0.8,
-                    temperature: .cool
+                    temperature: .cool,
+                    fillLevel: selectedTimeRange == .today ? min(viewModel.totalWater / 2000, 1.0) : min(viewModel.totalWater / (2000 * Double(selectedTimeRange.days)), 1.0),
+                    goal: selectedTimeRange == .today ? 2000 : 2000 * Double(selectedTimeRange.days)
                 )
                 
                 LiquidCard(
@@ -215,7 +220,9 @@ struct AnalyticsView: View {
                     trend: viewModel.caffeineTrend,
                     icon: "mug.fill",
                     viscosity: 0.6,
-                    temperature: .warm
+                    temperature: .warm,
+                    fillLevel: selectedTimeRange == .today ? min(viewModel.totalCaffeine / 400, 1.0) : min(viewModel.totalCaffeine / (400 * Double(selectedTimeRange.days)), 1.0),
+                    goal: selectedTimeRange == .today ? 400 : 400 * Double(selectedTimeRange.days)
                 )
             }
         }
@@ -673,11 +680,13 @@ struct LiquidCard: View {
     let icon: String
     let viscosity: Double // 0.0 to 1.0 (water to honey)
     let temperature: LiquidTemperature
+    let fillLevel: Double // 0.0 to 1.0 how full the card is
+    let goal: Double // The goal amount for reference
     
     @State private var blobPhase = 0.0
     @State private var surfaceWave = 0.0
     @State private var dropletOffset = 0.0
-    @State private var mercuryLevel: CGFloat = 0.0
+    @State private var currentFillLevel: Double = 0.0
     @State private var rippleCenter = CGPoint.zero
     @State private var rippleRadius: CGFloat = 0.0
     @State private var isAnimating = false
@@ -728,6 +737,11 @@ struct LiquidCard: View {
         .frame(height: 220)
         .clipShape(LiquidShape(phase: blobPhase, viscosity: viscosity))
         .onAppear(perform: animateCard)
+        .onChange(of: fillLevel) { _, newLevel in
+            withAnimation(.spring(response: 2.0, dampingFraction: 0.7)) {
+                currentFillLevel = newLevel
+            }
+        }
     }
     
     private var liquidBackground: some View {
@@ -770,7 +784,7 @@ struct LiquidCard: View {
             Spacer()
             
             ZStack {
-                // Mercury pool - reduced height
+                // Dynamic liquid pool - fills based on consumption
                 RoundedRectangle(cornerRadius: 20)
                     .fill(
                         .linearGradient(
@@ -783,9 +797,9 @@ struct LiquidCard: View {
                             endPoint: .bottom
                         )
                     )
-                    .frame(height: mercuryLevel * 60)
+                    .frame(height: CGFloat(currentFillLevel) * 120)
                 
-                // Mercury surface shimmer
+                // Liquid surface shimmer
                 RoundedRectangle(cornerRadius: 20)
                     .fill(
                         .linearGradient(
@@ -799,7 +813,15 @@ struct LiquidCard: View {
                         )
                     )
                     .frame(height: 15)
-                    .offset(y: -mercuryLevel * 25)
+                    .offset(y: -CGFloat(currentFillLevel) * 50)
+                    
+                // Goal indicator line
+                if currentFillLevel < 1.0 {
+                    Rectangle()
+                        .fill(.white.opacity(0.5))
+                        .frame(height: 1)
+                        .offset(y: -120)
+                }
             }
         }
         .opacity(0.7)
@@ -915,26 +937,56 @@ struct LiquidCard: View {
     }
     
     private var trendView: some View {
-        HStack(spacing: 8) {
-            if let trend = trend {
-                Image(systemName: trend.direction.icon)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white)
+        VStack(spacing: 8) {
+            HStack(spacing: 8) {
+                if let trend = trend {
+                    Image(systemName: trend.direction.icon)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Text(trend.rawValue)
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
+                }
                 
-                Text(trend.rawValue)
-                    .font(.system(size: 12, weight: .medium, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
+                Spacer()
+                
+                // Progress percentage
+                Text("\(Int(fillLevel * 100))%")
+                    .font(.system(size: 12, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
             }
             
-            Spacer()
-            
-            // Viscosity indicator
-            HStack(spacing: 2) {
-                ForEach(0..<5, id: \.self) { i in
-                    Circle()
-                        .fill(i < Int(viscosity * 5) ? .white : .white.opacity(0.3))
-                        .frame(width: 4, height: 4)
+            // Progress bar
+            HStack(spacing: 4) {
+                Text("0")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.6))
+                
+                ZStack(alignment: .leading) {
+                    // Background track
+                    Capsule()
+                        .fill(.white.opacity(0.2))
+                        .frame(height: 6)
+                    
+                    // Progress fill
+                    Capsule()
+                        .fill(
+                            .linearGradient(
+                                colors: [
+                                    .white.opacity(0.8),
+                                    .white.opacity(0.4)
+                                ],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: CGFloat(fillLevel) * 100, height: 6)
                 }
+                
+                Text("\(Int(goal))")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.6))
             }
         }
     }
@@ -952,9 +1004,9 @@ struct LiquidCard: View {
             surfaceWave = .pi * 2
         }
         
-        // Mercury fill
+        // Liquid fill animation
         withAnimation(.spring(response: 2.0, dampingFraction: 0.7)) {
-            mercuryLevel = 1.0
+            currentFillLevel = fillLevel
         }
         
         // Droplet animation
