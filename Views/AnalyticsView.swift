@@ -74,8 +74,8 @@ struct AnalyticsView: View {
                     .padding(.bottom, 24)
                 }
             }
-            .navigationTitle("Hydration Analytics")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("Analytics")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { 
@@ -88,6 +88,22 @@ struct AnalyticsView: View {
                             .symbolRenderingMode(.hierarchical)
                     }
                 }
+            }
+            .onAppear {
+                // Customize navigation bar appearance
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor.systemBackground
+                appearance.shadowColor = UIColor.clear
+                
+                // Configure title text attributes
+                appearance.titleTextAttributes = [
+                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold),
+                    .foregroundColor: UIColor.label
+                ]
+                
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
             }
             .sheet(isPresented: $showingInsights) {
                 InsightsView(insights: viewModel.insights)

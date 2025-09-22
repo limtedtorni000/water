@@ -23,10 +23,28 @@ struct HomeView: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .ignoresSafeArea(edges: [.horizontal, .bottom])
+                .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Custom Header to match the image layout
+                        HStack {
+                            Text("HydraTrack")
+                                .font(.largeTitle.weight(.bold))
+                            
+                            Spacer()
+                            
+                            Button(action: { 
+                                AnalyticsService.shared.trackEvent(.settings_viewed)
+                                showingAddIntake = true 
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .symbolRenderingMode(.hierarchical)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
                         // Header with greeting
                         greetingSection
                         
@@ -45,29 +63,10 @@ struct HomeView: View {
                         Spacer(minLength: 80)
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, -10)
-                }
-                .refreshable {
-                    viewModel.loadTodayEntries()
+                    .padding(.top) // Provides default top padding below the status bar
                 }
             }
-            .navigationTitle("HydraTrack")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarBackground(Color(UIColor.systemBackground), for: .navigationBar)
-            .toolbarColorScheme(.light, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { 
-                        AnalyticsService.shared.trackEvent(.settings_viewed)
-                        showingAddIntake = true 
-                    }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-              }
+            .navigationBarHidden(true) // Hides the original navigation bar
             .sheet(isPresented: $showingAddIntake) {
                 AddIntakeView(viewModel: viewModel)
             }
