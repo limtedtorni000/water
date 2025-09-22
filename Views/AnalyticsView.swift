@@ -44,10 +44,11 @@ struct AnalyticsView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 48) {
+                    VStack(spacing: 40) {
                         // Header with time selector
                         headerSection
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         
                         // Summary cards with improved design
                         summarySection
@@ -67,11 +68,11 @@ struct AnalyticsView: View {
                         // Achievements showcase
                         achievementsSection
                         
-                        Spacer(minLength: 200)
+                        Spacer(minLength: 120)
                     }
-                    .padding(.horizontal, 28)
-                    .padding(.top, 8)
-                    .padding(.bottom, 24)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 32)
                 }
             }
             .navigationTitle("Analytics")
@@ -201,7 +202,7 @@ struct AnalyticsView: View {
     
     // MARK: - Summary Section
     private var summarySection: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             HStack {
                 Text("Overview")
                     .font(.title2)
@@ -234,10 +235,10 @@ struct AnalyticsView: View {
             }
             
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 20),
-                GridItem(.flexible(), spacing: 20),
-                GridItem(.flexible(), spacing: 20)
-            ], spacing: 20) {
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ], spacing: 16) {
                 EnhancedSummaryCard(
                     title: "Water",
                     value: String(format: "%.0f", viewModel.totalWater),
@@ -270,7 +271,7 @@ struct AnalyticsView: View {
     
     // MARK: - Charts Section
     private var chartsSection: some View {
-        VStack(spacing: 40) {
+        VStack(spacing: 32) {
             HStack {
                 Text("Consumption Patterns")
                     .font(.title2)
@@ -286,7 +287,7 @@ struct AnalyticsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            VStack(spacing: 32) {
+            VStack(spacing: 24) {
                 // Water chart with animation
                 EnhancedChartCard(
                     title: "Water Intake",
@@ -329,7 +330,7 @@ struct AnalyticsView: View {
                             .interpolationMethod(.catmullRom)
                         }
                     }
-                    .frame(height: 200)
+                    .frame(height: 180)
                     .chartXAxis {
                         AxisMarks(preset: .automatic, position: .bottom)
                     }
@@ -367,7 +368,7 @@ struct AnalyticsView: View {
                             .cornerRadius(6)
                         }
                     }
-                    .frame(height: 200)
+                    .frame(height: 180)
                     .chartXAxis {
                         AxisMarks(preset: .automatic, position: .bottom)
                     }
@@ -386,7 +387,7 @@ struct AnalyticsView: View {
     
     // MARK: - Patterns Section
     private var patternsSection: some View {
-        VStack(spacing: 36) {
+        VStack(spacing: 28) {
             HStack {
                 Text("Habit Insights")
                     .font(.title2)
@@ -405,7 +406,7 @@ struct AnalyticsView: View {
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 20) {
+            ], spacing: 16) {
                 ForEach(0..<4, id: \.self) { index in
                     Group {
                         if index == 0 {
@@ -453,7 +454,7 @@ struct AnalyticsView: View {
     
     // MARK: - Weekly Highlights Section
     private var weeklyHighlightsSection: some View {
-        VStack(spacing: 36) {
+        VStack(spacing: 28) {
             HStack {
                 Text("Weekly Highlights")
                     .font(.title2)
@@ -470,11 +471,11 @@ struct AnalyticsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             
             ModernCard(
-                padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
+                padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
             ) {
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     HStack {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text("Best Day")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -489,7 +490,7 @@ struct AnalyticsView: View {
                         
                         Spacer()
                         
-                        VStack(alignment: .trailing, spacing: 8) {
+                        VStack(alignment: .trailing, spacing: 6) {
                             Text("Streak")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -506,7 +507,7 @@ struct AnalyticsView: View {
                     Divider()
                     
                     HStack {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: 6) {
                             Text("This Week's Goal")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
@@ -526,7 +527,7 @@ struct AnalyticsView: View {
     }
     
     private var insightsSection: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             HStack {
                 Text("AI Insights")
                     .font(.title2)
@@ -563,11 +564,11 @@ struct AnalyticsView: View {
             
             if viewModel.insights.isEmpty {
                 ModernCard(
-                    padding: EdgeInsets(top: 40, leading: 24, bottom: 40, trailing: 24)
+                    padding: EdgeInsets(top: 32, leading: 20, bottom: 32, trailing: 20)
                 ) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         Image(systemName: "lightbulb.slash")
-                            .font(.system(size: 48))
+                            .font(.system(size: 44))
                             .foregroundColor(.secondary.opacity(0.6))
                         
                         Text("No insights yet")
@@ -584,9 +585,9 @@ struct AnalyticsView: View {
             } else {
                 // Top insights grid
                 LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 20),
-                    GridItem(.flexible(), spacing: 20)
-                ], spacing: 20) {
+                    GridItem(.flexible(), spacing: 16),
+                    GridItem(.flexible(), spacing: 16)
+                ], spacing: 16) {
                     ForEach(viewModel.insights.prefix(2)) { insight in
                         EnhancedInsightCard(insight: insight)
                     }
@@ -596,7 +597,7 @@ struct AnalyticsView: View {
     }
     
     private var achievementsSection: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 24) {
             HStack {
                 Text("Achievements")
                     .font(.title2)
@@ -628,11 +629,11 @@ struct AnalyticsView: View {
             
             if viewModel.achievements.isEmpty {
                 ModernCard(
-                    padding: EdgeInsets(top: 40, leading: 24, bottom: 40, trailing: 24)
+                    padding: EdgeInsets(top: 32, leading: 20, bottom: 32, trailing: 20)
                 ) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         Image(systemName: "trophy")
-                            .font(.system(size: 48))
+                            .font(.system(size: 44))
                             .foregroundColor(.secondary.opacity(0.6))
                         
                         Text("No achievements yet")
@@ -652,7 +653,7 @@ struct AnalyticsView: View {
                     GridItem(.flexible()),
                     GridItem(.flexible()),
                     GridItem(.flexible())
-                ], spacing: 20) {
+                ], spacing: 16) {
                     ForEach(viewModel.achievements.prefix(6)) { achievement in
                         EnhancedAchievementCard(achievement: achievement)
                     }
@@ -721,9 +722,9 @@ struct EnhancedSummaryCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
+            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         ) {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 // Icon and title
                 HStack {
                     ZStack {
@@ -735,11 +736,11 @@ struct EnhancedSummaryCard: View {
                                     endPoint: .bottomTrailing
                                 )
                             )
-                            .frame(width: 40, height: 40)
-                            .shadow(color: color.opacity(0.2), radius: 4, x: 0, y: 2)
+                            .frame(width: 36, height: 36)
+                            .shadow(color: color.opacity(0.2), radius: 3, x: 0, y: 1)
                         
                         Image(systemName: icon)
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(color)
                             .symbolRenderingMode(.hierarchical)
                     }
@@ -770,15 +771,15 @@ struct EnhancedSummaryCard: View {
                 }
                 
                 // Value
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Text(value)
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
                     
                     if let unit = unit {
                         Text(unit)
-                            .font(.system(size: 13, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundColor(.secondary)
                             .textCase(.uppercase)
                             .tracking(0.8)
@@ -787,7 +788,7 @@ struct EnhancedSummaryCard: View {
                 
                 // Title
                 Text(title)
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.primary)
             }
         }
@@ -858,29 +859,29 @@ struct EnhancedChartCard<Content: View>: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 24, leading: 24, bottom: 24, trailing: 24)
+            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
         ) {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 16) {
                 // Header
                 HStack {
                     ZStack {
                         Circle()
                             .fill(color.opacity(0.15))
-                            .frame(width: 40, height: 40)
+                            .frame(width: 36, height: 36)
                         
                         Image(systemName: icon)
-                            .font(.system(size: 20, weight: .semibold))
+                            .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(color)
                     }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text(title)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.primary)
                         
                         if let subtitle = subtitle {
                             Text(subtitle)
-                                .font(.system(size: 13))
+                                .font(.system(size: 12))
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -905,9 +906,9 @@ struct EnhancedPatternCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+            padding: EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
         ) {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 // Icon - fixed height
                 ZStack {
                     Circle()
@@ -918,48 +919,48 @@ struct EnhancedPatternCard: View {
                                 endPoint: .bottomTrailing
                             )
                         )
-                        .frame(width: 44, height: 44)
-                        .shadow(color: color.opacity(0.2), radius: 4, x: 0, y: 2)
+                        .frame(width: 40, height: 40)
+                        .shadow(color: color.opacity(0.2), radius: 3, x: 0, y: 1)
                     
                     Image(systemName: icon)
-                        .font(.system(size: 22, weight: .semibold))
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(color)
                         .symbolRenderingMode(.hierarchical)
                 }
-                .frame(height: 44)
+                .frame(height: 40)
                 
                 // Value - fixed height
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
                     Text(value)
-                        .font(.system(size: 24, weight: .bold, design: .rounded))
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     
                     if let unit = unit {
                         Text(unit)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(.secondary)
                             .textCase(.uppercase)
                             .tracking(0.8)
                     }
                 }
-                .frame(height: unit != nil ? 40 : 28)
+                .frame(height: unit != nil ? 36 : 24)
                 
                 // Title and subtitle - fixed height
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14, weight: .bold))
+                        .font(.system(size: 13, weight: .bold))
                         .foregroundColor(.primary)
                         .lineLimit(1)
                     
                     Text(subtitle)
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(minHeight: 52, maxHeight: 52)
+                .frame(minHeight: 48, maxHeight: 48)
                 
                 Spacer(minLength: 0)
             }
@@ -974,43 +975,43 @@ struct EnhancedInsightCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20)
+            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
         ) {
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
                 // Icon and type
                 HStack {
                     ZStack {
                         Circle()
                             .fill(insight.type.color.opacity(0.15))
-                            .frame(width: 36, height: 36)
+                            .frame(width: 32, height: 32)
                         
                         Image(systemName: insight.icon)
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(insight.type.color)
                     }
                     
                     Spacer()
                     
                     Text(insight.type.rawValue.capitalized)
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(insight.type.color)
                         .textCase(.uppercase)
                         .tracking(0.5)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 3)
                         .background(insight.type.color.opacity(0.1))
                         .clipShape(Capsule())
                 }
                 
                 // Content
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text(insight.title)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.leading)
                     
                     Text(insight.description)
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                         .foregroundColor(.secondary)
                         .lineLimit(3)
                         .multilineTextAlignment(.leading)
@@ -1053,17 +1054,17 @@ struct EnhancedAchievementCard: View {
     
     var body: some View {
         ModernCard(
-            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+            padding: EdgeInsets(top: 12, leading: 12, bottom: 12, trailing: 12)
         ) {
-            VStack(spacing: 12) {
+            VStack(spacing: 10) {
                 // Icon with animation for unlocked achievements
                 ZStack {
                     Circle()
                         .fill(achievement.unlocked ? achievement.color.opacity(0.15) : Color.secondary.opacity(0.1))
-                        .frame(width: 48, height: 48)
+                        .frame(width: 44, height: 44)
                     
                     Image(systemName: achievement.icon)
-                        .font(.system(size: 24, weight: achievement.unlocked ? .semibold : .regular))
+                        .font(.system(size: 22, weight: achievement.unlocked ? .semibold : .regular))
                         .foregroundColor(achievement.unlocked ? achievement.color : .gray)
                         .scaleEffect(achievement.unlocked ? 1.1 : 1.0)
                         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: achievement.unlocked)
@@ -1071,37 +1072,37 @@ struct EnhancedAchievementCard: View {
                 
                 // Title
                 Text(achievement.title)
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 
                 // Progress
                 if achievement.unlocked {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 3) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 12))
+                            .font(.system(size: 11))
                             .foregroundColor(.green)
                         
                         Text("Unlocked")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(.green)
                             .textCase(.uppercase)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
                     .background(Color.green.opacity(0.1))
                     .clipShape(Capsule())
                 } else {
-                    VStack(spacing: 4) {
+                    VStack(spacing: 3) {
                         // Progress bar
                         ProgressView(value: Double(achievement.progress), total: Double(achievement.target))
                             .progressViewStyle(LinearProgressViewStyle(tint: achievement.color))
-                            .scaleEffect(x: 1, y: 1.5)
+                            .scaleEffect(x: 1, y: 1.3)
                         
                         // Progress text
                         Text("\(achievement.progress)/\(achievement.target)")
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundColor(.secondary)
                     }
                 }
