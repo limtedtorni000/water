@@ -41,6 +41,7 @@ struct SettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 checkReminderAuthorization()
+                syncReminderStatus()
                 
                 // Configure form appearance for dark mode
                 let appearance = UINavigationBarAppearance()
@@ -142,6 +143,15 @@ struct SettingsView: View {
                             ReminderService.shared.scheduleHydrationReminder(
                                 interval: TimeInterval(settingsViewModel.reminderInterval * 60)
                             )
+                            // Verify the reminder was actually scheduled
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                ReminderService.shared.getPendingReminders { reminders in
+                                    if reminders.isEmpty {
+                                        // If no reminders are pending, there was an error
+                                        settingsViewModel.reminderEnabled = false
+                                    }
+                                }
+                            }
                         } else {
                             settingsViewModel.reminderEnabled = false
                         }
@@ -204,9 +214,35 @@ struct SettingsView: View {
         }
     }
     
+    private func syncReminderStatus() {
+        // Check if reminders are actually scheduled and sync with UI
+        ReminderService.shared.getPendingReminders { reminders in
+            DispatchQueue.main.async {
+                let hasPendingReminder = !reminders.isEmpty
+                let reminderEnabled = UserDefaults.standard.bool(forKey: "reminderEnabled")
+                
+                // If UI shows enabled but no reminder is scheduled, disable it
+                if reminderEnabled && !hasPendingReminder {
+                    settingsViewModel.reminderEnabled = false
+                    UserDefaults.standard.set(false, forKey: "reminderEnabled")
+                }
+                // If UI shows disabled but reminder is scheduled, cancel it
+                else if !reminderEnabled && hasPendingReminder {
+                    ReminderService.shared.cancelAllReminders()
+                }
+            }
+        }
+    }
+    
     private func openSettings() {
         guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
         UIApplication.shared.open(settingsURL)
+        
+        // Check authorization status after returning from settings
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            checkReminderAuthorization()
+            syncReminderStatus()
+        }
     }
     
     private func resetSettings() {
