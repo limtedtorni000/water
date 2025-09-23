@@ -15,30 +15,49 @@ struct SettingsView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                goalsSection
+            ZStack {
+                // Background gradient with custom dark mode color
+                LinearGradient(
+                    colors: [
+                        Color(red: 0.1, green: 0.1, blue: 0.15),
+                        Color(red: 0.05, green: 0.05, blue: 0.1)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
                 
-                unitsSection
-                
-                remindersSection
-                
-                analyticsSection
-                
-                aboutSection
+                Form {
+                    goalsSection
+                    
+                    unitsSection
+                    
+                    remindersSection
+                    
+                    analyticsSection
+                    
+                    aboutSection
+                }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        settingsViewModel.saveSettings()
-                        AnalyticsService.shared.trackEvent(.settings_viewed)
-                        dismiss()
-                    }
-                }
-            }
             .onAppear {
                 checkReminderAuthorization()
+                
+                // Configure form appearance for dark mode
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(red: 0.1, green: 0.1, blue: 0.15, alpha: 1.0)
+                
+                // Configure title text attributes
+                appearance.titleTextAttributes = [
+                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold),
+                    .foregroundColor: UIColor.label
+                ]
+                
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
             }
             .sheet(isPresented: $showingAnalyticsDashboard) {
                 AnalyticsDashboardView()
@@ -54,8 +73,11 @@ struct SettingsView: View {
                 
                 HStack {
                     TextField("Amount", value: $settingsViewModel.waterGoal, format: .number)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(.roundedBorder)
                         .keyboardType(.decimalPad)
+                        .onChange(of: settingsViewModel.waterGoal) { _, _ in
+                            settingsViewModel.saveSettings()
+                        }
                     
                     Picker("", selection: $settingsViewModel.waterUnit) {
                         Text("ml").tag("ml")
@@ -71,8 +93,11 @@ struct SettingsView: View {
                 
                 HStack {
                     TextField("Amount", value: $settingsViewModel.caffeineGoal, format: .number)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .textFieldStyle(.roundedBorder)
                         .keyboardType(.decimalPad)
+                        .onChange(of: settingsViewModel.caffeineGoal) { _, _ in
+                            settingsViewModel.saveSettings()
+                        }
                     
                     Picker("", selection: $settingsViewModel.caffeineUnit) {
                         Text("mg").tag("mg")

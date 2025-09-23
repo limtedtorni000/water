@@ -54,7 +54,7 @@ struct AddIntakeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(selectedType == .water ? Color.waterLight : Color.secondaryBackground)
+                .background(selectedType == .water ? AnyShapeStyle(Color.waterLight) : AnyShapeStyle(.regularMaterial))
                 .cornerRadius(12)
             }
             
@@ -70,7 +70,7 @@ struct AddIntakeView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
-                .background(selectedType == .caffeine ? Color.caffeineLight : Color.secondaryBackground)
+                .background(selectedType == .caffeine ? AnyShapeStyle(Color.caffeineLight) : AnyShapeStyle(.regularMaterial))
                 .cornerRadius(12)
             }
         }
@@ -98,7 +98,7 @@ struct AddIntakeView: View {
                             .foregroundColor(amount == value && customAmount.isEmpty ? .white : .textPrimary)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(amount == value && customAmount.isEmpty ? (selectedType == .water ? Color.waterBlue : Color.caffeineBrown) : Color.secondaryBackground)
+                            .background(amount == value && customAmount.isEmpty ? AnyShapeStyle(selectedType == .water ? Color.waterBlue : Color.caffeineBrown) : AnyShapeStyle(.regularMaterial))
                             .cornerRadius(8)
                     }
                     .buttonStyle(PlainButtonStyle())

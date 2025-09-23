@@ -114,7 +114,7 @@ struct HistoryView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.secondaryBackground)
+                .background(.regularMaterial)
                 .cornerRadius(12)
                 
                 VStack(spacing: 8) {
@@ -129,7 +129,7 @@ struct HistoryView: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(Color.secondaryBackground)
+                .background(.regularMaterial)
                 .cornerRadius(12)
             }
         }
