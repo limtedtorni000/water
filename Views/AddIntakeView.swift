@@ -130,5 +130,5 @@ struct AddIntakeView: View {
 }
 
 #Preview {
-    AddIntakeView(viewModel: IntakeViewModel())
+    AddIntakeView(viewModel: IntakeViewModel.shared)
 }

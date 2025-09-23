@@ -7,6 +7,10 @@ class IntakeViewModel: ObservableObject {
     @Published var todayEntries: [IntakeEntry] = []
     @Published var waterProgress: Double = 0
     @Published var caffeineProgress: Double = 0
+    @Published var waterGoal: Double = 2000
+    @Published var caffeineGoal: Double = 400
+    @Published var waterUnit: String = "ml"
+    @Published var caffeineUnit: String = "mg"
     
     private let storageService = StorageService.shared
     private let userDefaults = UserDefaults.standard
@@ -16,44 +20,56 @@ class IntakeViewModel: ObservableObject {
     private var waterUnitKey = "waterUnit"
     private var caffeineUnitKey = "caffeineUnit"
     
-    init() {
+    static let shared = IntakeViewModel()
+    
+    private init() {
+        // Load settings from UserDefaults
+        waterGoal = userDefaults.double(forKey: waterGoalKey) == 0 ? 2000 : userDefaults.double(forKey: waterGoalKey)
+        caffeineGoal = userDefaults.double(forKey: caffeineGoalKey) == 0 ? 400 : userDefaults.double(forKey: caffeineGoalKey)
+        waterUnit = userDefaults.string(forKey: waterUnitKey) ?? "ml"
+        caffeineUnit = userDefaults.string(forKey: caffeineUnitKey) ?? "mg"
+        
         loadTodayEntries()
     }
     
-    var waterGoal: Double {
+    var waterGoalValue: Double {
         get {
-            return userDefaults.double(forKey: waterGoalKey) == 0 ? 2000 : userDefaults.double(forKey: waterGoalKey)
+            return waterGoal
         }
         set {
+            waterGoal = newValue
             userDefaults.set(newValue, forKey: waterGoalKey)
             updateProgress()
         }
     }
     
-    var caffeineGoal: Double {
+    var caffeineGoalValue: Double {
         get {
-            return userDefaults.double(forKey: caffeineGoalKey) == 0 ? 400 : userDefaults.double(forKey: caffeineGoalKey)
+            return caffeineGoal
         }
         set {
+            caffeineGoal = newValue
             userDefaults.set(newValue, forKey: caffeineGoalKey)
             updateProgress()
         }
     }
     
-    var waterUnit: String {
+    var waterUnitValue: String {
         get {
-            return userDefaults.string(forKey: waterUnitKey) ?? "ml"
+            return waterUnit
         }
         set {
+            waterUnit = newValue
             userDefaults.set(newValue, forKey: waterUnitKey)
         }
     }
     
-    var caffeineUnit: String {
+    var caffeineUnitValue: String {
         get {
-            return userDefaults.string(forKey: caffeineUnitKey) ?? "mg"
+            return caffeineUnit
         }
         set {
+            caffeineUnit = newValue
             userDefaults.set(newValue, forKey: caffeineUnitKey)
         }
     }

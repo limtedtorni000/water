@@ -29,7 +29,7 @@ struct ContentView: View {
                     }
                     .tag(1)
                 
-                SettingsView(viewModel: IntakeViewModel())
+                SettingsView(viewModel: IntakeViewModel.shared)
                     .tabItem {
                         Label("Settings", systemImage: "gearshape.fill")
                     }

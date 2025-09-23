@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HomeView: View {
-    @StateObject private var viewModel = IntakeViewModel()
+    @StateObject private var viewModel = IntakeViewModel.shared
     @State private var showingAddIntake = false
     @State private var animateProgress = false
     

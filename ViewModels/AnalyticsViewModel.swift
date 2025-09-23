@@ -21,6 +21,11 @@ class AnalyticsViewModel: ObservableObject {
     
     private let storageService = StorageService.shared
     private let analyticsService = AnalyticsService.shared
+    private let intakeViewModel: IntakeViewModel
+    
+    init(intakeViewModel: IntakeViewModel) {
+        self.intakeViewModel = intakeViewModel
+    }
     
     struct DailyIntake: Identifiable {
         let id = UUID()
@@ -32,9 +37,8 @@ class AnalyticsViewModel: ObservableObject {
     
     func loadData(for timeRange: AnalyticsView.TimeRange) {
         // Load user preferences
-        let intakeVM = IntakeViewModel()
-        waterUnit = intakeVM.waterUnit
-        caffeineUnit = intakeVM.caffeineUnit
+        waterUnit = intakeViewModel.waterUnit
+        caffeineUnit = intakeViewModel.caffeineUnit
         
         // Get intake entries for the time range
         let entries = storageService.getIntakeEntries(for: timeRange.days)
@@ -165,8 +169,7 @@ class AnalyticsViewModel: ObservableObject {
         }
         
         // Goal achievement rate
-        let intakeVM = IntakeViewModel()
-        let waterGoal = intakeVM.waterGoal
+        let waterGoal = intakeViewModel.waterGoal
         
         let daysWithGoal = dailyData.filter { $0.waterAmount >= waterGoal }.count
         let totalActiveDays = dailyData.filter { $0.waterAmount > 0 }.count
@@ -266,8 +269,8 @@ class AnalyticsViewModel: ObservableObject {
                 icon: "target",
                 color: .purple,
                 target: 5,
-                progress: dailyData.filter { $0.waterAmount >= IntakeViewModel().waterGoal }.count,
-                unlocked: dailyData.filter { $0.waterAmount >= IntakeViewModel().waterGoal }.count >= 5
+                progress: dailyData.filter { $0.waterAmount >= intakeViewModel.waterGoal }.count,
+                unlocked: dailyData.filter { $0.waterAmount >= intakeViewModel.waterGoal }.count >= 5
             ),
             Achievement(
                 title: "Morning Person",

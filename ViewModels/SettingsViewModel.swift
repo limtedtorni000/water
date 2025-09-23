@@ -18,6 +18,7 @@ class SettingsViewModel: ObservableObject {
     }
     
     private func loadSettings() {
+        // Load from IntakeViewModel (which already handles UserDefaults)
         waterGoal = intakeViewModel.waterGoal
         caffeineGoal = intakeViewModel.caffeineGoal
         waterUnit = intakeViewModel.waterUnit
@@ -27,11 +28,13 @@ class SettingsViewModel: ObservableObject {
     }
     
     func saveSettings() {
+        // Save to IntakeViewModel (which handles UserDefaults)
+        intakeViewModel.waterGoalValue = waterGoal
+        intakeViewModel.caffeineGoalValue = caffeineGoal
+        intakeViewModel.waterUnitValue = waterUnit
+        intakeViewModel.caffeineUnitValue = caffeineUnit
         
-        intakeViewModel.waterGoal = waterGoal
-        intakeViewModel.caffeineGoal = caffeineGoal
-        intakeViewModel.waterUnit = waterUnit
-        intakeViewModel.caffeineUnit = caffeineUnit
+        // Save reminder settings to UserDefaults
         userDefaults.set(reminderEnabled, forKey: "reminderEnabled")
         userDefaults.set(reminderInterval, forKey: "reminderInterval")
     }

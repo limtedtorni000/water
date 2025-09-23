@@ -205,10 +205,10 @@ class AnalyticsService {
     // MARK: - App Preferences
     func trackAppPreferences() {
         // Track user preferences
-        setUserProperty("water_goal_\(IntakeViewModel().waterGoal)", forName: "preferred_water_goal")
-        setUserProperty("caffeine_goal_\(IntakeViewModel().caffeineGoal)", forName: "preferred_caffeine_goal")
-        setUserProperty(IntakeViewModel().waterUnit, forName: "preferred_water_unit")
-        setUserProperty(IntakeViewModel().caffeineUnit, forName: "preferred_caffeine_unit")
+        setUserProperty("water_goal_\(IntakeViewModel.shared.waterGoal)", forName: "preferred_water_goal")
+        setUserProperty("caffeine_goal_\(IntakeViewModel.shared.caffeineGoal)", forName: "preferred_caffeine_goal")
+        setUserProperty(IntakeViewModel.shared.waterUnit, forName: "preferred_water_unit")
+        setUserProperty(IntakeViewModel.shared.caffeineUnit, forName: "preferred_caffeine_unit")
     }
     
     // MARK: - Usage Metrics

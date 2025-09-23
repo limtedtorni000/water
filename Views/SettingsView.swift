@@ -8,6 +8,13 @@ struct SettingsView: View {
     @StateObject private var settingsViewModel: SettingsViewModel
     @State private var reminderAuthorized = false
     
+    // Temporary values for unit conversion preview
+    @State private var tempWaterGoal: Double = 2000
+    @State private var tempCaffeineGoal: Double = 400
+    @State private var tempWaterUnit: String = "ml"
+    @State private var tempCaffeineUnit: String = "mg"
+    @State private var hasUnsavedChanges = false
+    
     init(viewModel: IntakeViewModel) {
         self.viewModel = viewModel
         self._settingsViewModel = StateObject(wrappedValue: SettingsViewModel(intakeViewModel: viewModel))
@@ -32,17 +39,13 @@ struct SettingsView: View {
                         goalsCard
                             .transition(.scale.combined(with: .opacity))
                         
-                        unitsCard
-                            .transition(.scale.combined(with: .opacity))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.1), value: settingsViewModel.waterUnit)
-                        
                         remindersCard
                             .transition(.scale.combined(with: .opacity))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: settingsViewModel.reminderEnabled)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.1), value: settingsViewModel.reminderEnabled)
                         
                         aboutCard
                             .transition(.scale.combined(with: .opacity))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.3), value: true)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: true)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
@@ -51,6 +54,13 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
+                // Load current settings into temp values
+                tempWaterGoal = settingsViewModel.waterGoal
+                tempCaffeineGoal = settingsViewModel.caffeineGoal
+                tempWaterUnit = settingsViewModel.waterUnit
+                tempCaffeineUnit = settingsViewModel.caffeineUnit
+                hasUnsavedChanges = false
+                
                 checkReminderAuthorization()
                 syncReminderStatus()
             }
@@ -122,8 +132,8 @@ struct SettingsView: View {
                         color: .waterBlue,
                         icon: "drop.fill",
                         value: Int(getTodayIntake(for: "water")),
-                        goal: Int(settingsViewModel.waterGoal),
-                        unit: settingsViewModel.waterUnit,
+                        goal: Int(tempWaterGoal),
+                        unit: tempWaterUnit,
                         title: "Water"
                     )
                     
@@ -135,8 +145,8 @@ struct SettingsView: View {
                         color: .caffeineBrown,
                         icon: "mug.fill",
                         value: Int(getTodayIntake(for: "caffeine")),
-                        goal: Int(settingsViewModel.caffeineGoal),
-                        unit: settingsViewModel.caffeineUnit,
+                        goal: Int(tempCaffeineGoal),
+                        unit: tempCaffeineUnit,
                         title: "Caffeine"
                     )
                 }
@@ -154,8 +164,21 @@ struct SettingsView: View {
                         title: "Water Target",
                         icon: "drop",
                         color: .waterBlue,
-                        value: $settingsViewModel.waterGoal,
-                        unit: $settingsViewModel.waterUnit,
+                        value: Binding(
+                            get: { tempWaterGoal },
+                            set: { tempWaterGoal = $0; hasUnsavedChanges = true }
+                        ),
+                        unit: Binding(
+                            get: { tempWaterUnit },
+                            set: { newValue in
+                                // Convert value when unit changes
+                                if tempWaterUnit != newValue {
+                                    tempWaterGoal = convertWaterValue(tempWaterGoal, from: tempWaterUnit, to: newValue)
+                                    tempWaterUnit = newValue
+                                    hasUnsavedChanges = true
+                                }
+                            }
+                        ),
                         units: ["ml", "oz"]
                     )
                     
@@ -164,8 +187,21 @@ struct SettingsView: View {
                         title: "Caffeine Limit",
                         icon: "mug",
                         color: .caffeineBrown,
-                        value: $settingsViewModel.caffeineGoal,
-                        unit: $settingsViewModel.caffeineUnit,
+                        value: Binding(
+                            get: { tempCaffeineGoal },
+                            set: { tempCaffeineGoal = $0; hasUnsavedChanges = true }
+                        ),
+                        unit: Binding(
+                            get: { tempCaffeineUnit },
+                            set: { newValue in
+                                // Convert value when unit changes
+                                if tempCaffeineUnit != newValue {
+                                    tempCaffeineGoal = convertCaffeineValue(tempCaffeineGoal, from: tempCaffeineUnit, to: newValue)
+                                    tempCaffeineUnit = newValue
+                                    hasUnsavedChanges = true
+                                }
+                            }
+                        ),
                         units: ["mg", "cups"]
                     )
                 }
@@ -190,10 +226,10 @@ struct SettingsView: View {
                     actionButton(
                         title: "Apply Presets",
                         icon: "slider.horizontal.3",
-                        color: .waterBlue,
+                        color: hasUnsavedChanges ? .waterBlue : .gray,
                         action: {
+                            applySettings()
                             triggerHaptic(.light)
-                            // Show presets
                         }
                     )
                 }
@@ -214,108 +250,7 @@ struct SettingsView: View {
         }
       }
     
-    private var unitsCard: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Image(systemName: "ruler")
-                    .font(.title3)
-                    .foregroundColor(.textPrimary)
-                Text("Units")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.textPrimary)
-                Spacer()
-            }
-            
-            VStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Water Unit")
-                        .font(.subheadline)
-                        .foregroundColor(.textSecondary)
-                    
-                    HStack(spacing: 0) {
-                        Button("ml") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                settingsViewModel.waterUnit = "ml"
-                                triggerHaptic(.light)
-                            }
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(settingsViewModel.waterUnit == "ml" ? .white : Color.waterBlue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(settingsViewModel.waterUnit == "ml" ? Color.waterBlue : Color.waterBlue.opacity(0.15))
-                        .cornerRadius(12)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: settingsViewModel.waterUnit)
-                        
-                        Button("oz") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                settingsViewModel.waterUnit = "oz"
-                                triggerHaptic(.light)
-                            }
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(settingsViewModel.waterUnit == "oz" ? .white : Color.waterBlue)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(settingsViewModel.waterUnit == "oz" ? Color.waterBlue : Color.waterBlue.opacity(0.15))
-                        .cornerRadius(12)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: settingsViewModel.waterUnit)
-                    }
-                }
-                .padding(16)
-                .background(Color.secondaryBackground)
-                .cornerRadius(16)
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Caffeine Unit")
-                        .font(.subheadline)
-                        .foregroundColor(.textSecondary)
-                    
-                    HStack(spacing: 0) {
-                        Button("mg") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                settingsViewModel.caffeineUnit = "mg"
-                                triggerHaptic(.light)
-                            }
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(settingsViewModel.caffeineUnit == "mg" ? .white : Color.caffeineBrown)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(settingsViewModel.caffeineUnit == "mg" ? Color.caffeineBrown : Color.caffeineBrown.opacity(0.15))
-                        .cornerRadius(12)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: settingsViewModel.caffeineUnit)
-                        
-                        Button("cups") {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                settingsViewModel.caffeineUnit = "cups"
-                                triggerHaptic(.light)
-                            }
-                        }
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundColor(settingsViewModel.caffeineUnit == "cups" ? .white : Color.caffeineBrown)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(settingsViewModel.caffeineUnit == "cups" ? Color.caffeineBrown : Color.caffeineBrown.opacity(0.15))
-                        .cornerRadius(12)
-                        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: settingsViewModel.caffeineUnit)
-                    }
-                }
-                .padding(16)
-                .background(Color.secondaryBackground)
-                .cornerRadius(16)
-            }
-        }
-        .padding(20)
-        .background(Color.secondaryBackground)
-        .cornerRadius(20)
-    }
-    
+      
     private var remindersCard: some View {
         VStack(spacing: 16) {
             HStack {
@@ -499,7 +434,7 @@ struct SettingsView: View {
                         .scaleEffect(progress > 0.8 ? 1.15 : 1.0)
                         .animation(.easeInOut(duration: 0.5).repeatCount(2, autoreverses: true), value: progress)
                     
-                    Text("\(Int(progress * 100))%")
+                    Text("\(Int((progress.isFinite && !progress.isNaN) ? progress * 100 : 0))%")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(color)
@@ -568,9 +503,14 @@ struct SettingsView: View {
             HStack(spacing: 20) {
                 // Minus Button
                 Button(action: {
-                    value.wrappedValue = max(minimumValue(for: unit.wrappedValue), 
-                                             value.wrappedValue - incrementStep(for: unit.wrappedValue))
-                    settingsViewModel.saveSettings()
+                    if title == "Water Target" {
+                        tempWaterGoal = max(minimumValue(for: tempWaterUnit), 
+                                            tempWaterGoal - incrementStep(for: tempWaterUnit))
+                    } else {
+                        tempCaffeineGoal = max(minimumValue(for: tempCaffeineUnit), 
+                                               tempCaffeineGoal - incrementStep(for: tempCaffeineUnit))
+                    }
+                    hasUnsavedChanges = true
                     triggerHaptic(.light)
                 }) {
                     Image(systemName: "minus.circle.fill")
@@ -587,15 +527,17 @@ struct SettingsView: View {
                 ) {
                     Text(title)
                 }
-                .onChange(of: value.wrappedValue) { _, _ in
-                    settingsViewModel.saveSettings()
-                }
                 
                 // Plus Button
                 Button(action: {
-                    value.wrappedValue = min(maximumValue(for: unit.wrappedValue), 
-                                             value.wrappedValue + incrementStep(for: unit.wrappedValue))
-                    settingsViewModel.saveSettings()
+                    if title == "Water Target" {
+                        tempWaterGoal = min(maximumValue(for: tempWaterUnit), 
+                                            tempWaterGoal + incrementStep(for: tempWaterUnit))
+                    } else {
+                        tempCaffeineGoal = min(maximumValue(for: tempCaffeineUnit), 
+                                               tempCaffeineGoal + incrementStep(for: tempCaffeineUnit))
+                    }
+                    hasUnsavedChanges = true
                     triggerHaptic(.light)
                 }) {
                     Image(systemName: "plus.circle.fill")
@@ -609,8 +551,17 @@ struct SettingsView: View {
             HStack(spacing: 12) {
                 ForEach(units, id: \.self) { unitOption in
                     Button(action: {
-                        unit.wrappedValue = unitOption
-                        settingsViewModel.saveSettings()
+                        if unit.wrappedValue != unitOption {
+                            // Convert value when unit changes
+                            if title == "Water Target" {
+                                tempWaterGoal = convertWaterValue(tempWaterGoal, from: tempWaterUnit, to: unitOption)
+                                tempWaterUnit = unitOption
+                            } else {
+                                tempCaffeineGoal = convertCaffeineValue(tempCaffeineGoal, from: tempCaffeineUnit, to: unitOption)
+                                tempCaffeineUnit = unitOption
+                            }
+                            hasUnsavedChanges = true
+                        }
                         triggerHaptic(.light)
                     }) {
                         Text(unitOption)
@@ -784,9 +735,9 @@ struct SettingsView: View {
     private func presetButton(title: String, water: Double, caffeine: Double) -> some View {
         Button(action: {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                settingsViewModel.waterGoal = water
-                settingsViewModel.caffeineGoal = caffeine
-                settingsViewModel.saveSettings()
+                tempWaterGoal = water
+                tempCaffeineGoal = caffeine
+                hasUnsavedChanges = true
                 triggerHaptic(.medium)
             }
         }) {
@@ -800,7 +751,7 @@ struct SettingsView: View {
                         Image(systemName: "drop.fill")
                             .font(.caption)
                             .foregroundColor(.waterBlue)
-                        Text("\(Int(water)) ml")
+                        Text("\(Int(tempWaterUnit == "oz" ? convertWaterValue(water, from: "ml", to: "oz") : water)) \(tempWaterUnit)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -809,7 +760,7 @@ struct SettingsView: View {
                         Image(systemName: "mug.fill")
                             .font(.caption)
                             .foregroundColor(.caffeineBrown)
-                        Text("\(Int(caffeine)) mg")
+                        Text("\(Int(tempCaffeineUnit == "cups" ? convertCaffeineValue(caffeine, from: "mg", to: "cups") : caffeine)) \(tempCaffeineUnit)")
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -819,7 +770,7 @@ struct SettingsView: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(settingsViewModel.waterGoal == water && settingsViewModel.caffeineGoal == caffeine ? 
+                    .fill(tempWaterGoal == water && tempCaffeineGoal == caffeine ? 
                           AnyShapeStyle(LinearGradient(
                             colors: [Color.waterBlue.opacity(0.2), Color.caffeineBrown.opacity(0.2)],
                             startPoint: .topLeading,
@@ -829,14 +780,14 @@ struct SettingsView: View {
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(settingsViewModel.waterGoal == water && settingsViewModel.caffeineGoal == caffeine ? 
+                            .stroke(tempWaterGoal == water && tempCaffeineGoal == caffeine ? 
                                    Color.waterBlue : 
                                    Color.clear, 
                                    lineWidth: 2)
                     )
             )
-            .scaleEffect(settingsViewModel.waterGoal == water && settingsViewModel.caffeineGoal == caffeine ? 1.05 : 1.0)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: settingsViewModel.waterGoal)
+            .scaleEffect(tempWaterGoal == water && tempCaffeineGoal == caffeine ? 1.05 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: tempWaterGoal)
         }
         .buttonStyle(.plain)
     }
@@ -845,14 +796,14 @@ struct SettingsView: View {
     
     private func calculateWaterProgress() -> Double {
         let todayIntake = getTodayIntake(for: "water")
-        let goal = settingsViewModel.waterGoal
-        return min(todayIntake / goal, 1.0)
+        let goal = tempWaterGoal
+        return goal > 0 ? min(todayIntake / goal, 1.0) : 0
     }
     
     private func calculateCaffeineProgress() -> Double {
         let todayIntake = getTodayIntake(for: "caffeine")
-        let goal = settingsViewModel.caffeineGoal
-        return min(todayIntake / goal, 1.0)
+        let goal = tempCaffeineGoal
+        return goal > 0 ? min(todayIntake / goal, 1.0) : 0
     }
     
     private func getTodayIntake(for type: String) -> Double {
@@ -864,6 +815,18 @@ struct SettingsView: View {
     }
     
     // MARK: - Value Helpers
+    
+    private func convertWaterValue(_ value: Double, from fromUnit: String, to toUnit: String) -> Double {
+        // Convert to ml first, then to target unit
+        let inML = fromUnit == "oz" ? value * 29.5735 : value
+        return toUnit == "oz" ? inML / 29.5735 : inML
+    }
+    
+    private func convertCaffeineValue(_ value: Double, from fromUnit: String, to toUnit: String) -> Double {
+        // Convert to mg first, then to target unit (assuming 1 cup = 95mg caffeine)
+        let inMG = fromUnit == "cups" ? value * 95 : value
+        return toUnit == "cups" ? inMG / 95 : inMG
+    }
     
     private func incrementStep(for unit: String) -> Double {
         switch unit {
@@ -1056,15 +1019,34 @@ struct SettingsView: View {
     }
     
     private func resetSettings() {
-        settingsViewModel.resetToDefaults()
+        // Reset to defaults
+        tempWaterGoal = 2000
+        tempCaffeineGoal = 400
+        tempWaterUnit = "ml"
+        tempCaffeineUnit = "mg"
+        hasUnsavedChanges = true
+        
+        // Apply immediately
+        applySettings()
+        
         if settingsViewModel.reminderEnabled && reminderAuthorized {
             ReminderService.shared.scheduleHydrationReminder(
                 interval: TimeInterval(settingsViewModel.reminderInterval * 60)
             )
         }
     }
+    
+    private func applySettings() {
+        // Apply temporary settings
+        settingsViewModel.waterGoal = tempWaterGoal
+        settingsViewModel.caffeineGoal = tempCaffeineGoal
+        settingsViewModel.waterUnit = tempWaterUnit
+        settingsViewModel.caffeineUnit = tempCaffeineUnit
+        settingsViewModel.saveSettings()
+        hasUnsavedChanges = false
+    }
 }
 
 #Preview {
-    SettingsView(viewModel: IntakeViewModel())
+    SettingsView(viewModel: IntakeViewModel.shared)
 }

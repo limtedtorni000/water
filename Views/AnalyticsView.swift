@@ -2,7 +2,7 @@ import SwiftUI
 import Charts
 
 struct AnalyticsView: View {
-    @StateObject private var viewModel = AnalyticsViewModel()
+    @StateObject private var viewModel = AnalyticsViewModel(intakeViewModel: IntakeViewModel.shared)
     @State private var selectedTimeRange: TimeRange = .today
     @State private var showingInsights = false
     @State private var animateCharts = false
