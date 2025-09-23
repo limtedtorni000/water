@@ -124,7 +124,6 @@ struct AddIntakeView: View {
     
     private func addIntake() {
         let finalAmount = Double(customAmount) ?? amount
-        AnalyticsService.shared.trackIntakeAdded(type: selectedType, amount: finalAmount)
         viewModel.addIntake(type: selectedType, amount: finalAmount)
         dismiss()
     }
@@ -132,7 +131,4 @@ struct AddIntakeView: View {
 
 #Preview {
     AddIntakeView(viewModel: IntakeViewModel())
-        .onAppear {
-            AnalyticsService.shared.trackScreen("Add Intake")
-        }
 }

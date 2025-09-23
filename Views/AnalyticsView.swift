@@ -79,10 +79,7 @@ struct AnalyticsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { 
-                        showingInsights = true
-                        AnalyticsService.shared.trackEvent(.insights_viewed)
-                    }) {
+                    Button(action: { showingInsights = true }) {
                         Image(systemName: "lightbulb.circle.fill")
                             .font(.title3)
                             .foregroundColor(.waterBlue)
@@ -111,7 +108,6 @@ struct AnalyticsView: View {
             }
             .onAppear {
                 viewModel.loadData(for: selectedTimeRange)
-                AnalyticsService.shared.trackScreen("User Analytics")
                 withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.3)) {
                     animateCharts = true
                 }
@@ -497,7 +493,6 @@ struct AnalyticsView: View {
                 
                 Button(action: { 
                     showingInsights = true
-                    AnalyticsService.shared.trackEvent(.insights_viewed)
                 }) {
                     HStack(spacing: 6) {
                         Text("View All")

@@ -47,13 +47,6 @@ struct ContentView: View {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
             UITabBar.appearance().standardAppearance = appearance
-            
-            // Track tab changes
-            AnalyticsService.shared.trackScreen("Tab Navigation")
-        }
-        .onChange(of: selectedTab) { _, newTab in
-            let tabNames = ["Home", "History", "Analytics", "Settings"]
-            AnalyticsService.shared.trackScreen(tabNames[newTab])
         }
     }
 }

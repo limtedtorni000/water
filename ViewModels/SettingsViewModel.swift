@@ -27,27 +27,6 @@ class SettingsViewModel: ObservableObject {
     }
     
     func saveSettings() {
-        // Track goal changes
-        if waterGoal != intakeViewModel.waterGoal {
-            AnalyticsService.shared.trackGoalChanged(type: "water")
-        }
-        if caffeineGoal != intakeViewModel.caffeineGoal {
-            AnalyticsService.shared.trackGoalChanged(type: "caffeine")
-        }
-        
-        // Track unit changes
-        if waterUnit != intakeViewModel.waterUnit {
-            AnalyticsService.shared.trackUnitChanged(type: "water")
-        }
-        if caffeineUnit != intakeViewModel.caffeineUnit {
-            AnalyticsService.shared.trackUnitChanged(type: "caffeine")
-        }
-        
-        // Track reminder settings
-        let wasReminderEnabled = userDefaults.bool(forKey: "reminderEnabled")
-        if reminderEnabled != wasReminderEnabled {
-            AnalyticsService.shared.trackReminderSet(enabled: reminderEnabled)
-        }
         
         intakeViewModel.waterGoal = waterGoal
         intakeViewModel.caffeineGoal = caffeineGoal

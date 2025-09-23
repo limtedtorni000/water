@@ -34,10 +34,7 @@ struct HomeView: View {
                             
                             Spacer()
                             
-                            Button(action: { 
-                                AnalyticsService.shared.trackEvent(.settings_viewed)
-                                showingAddIntake = true 
-                            }) {
+                            Button(action: { showingAddIntake = true }) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.title2)
                                     .symbolRenderingMode(.hierarchical)
@@ -74,7 +71,6 @@ struct HomeView: View {
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     animateProgress = true
                 }
-                AnalyticsService.shared.trackScreen("Home")
             }
         }
     }
@@ -230,10 +226,7 @@ struct HomeView: View {
                     
                     Spacer()
                     
-                    Button(action: { 
-                        AnalyticsService.shared.trackEvent(.settings_viewed)
-                        showingAddIntake = true 
-                    }) {
+                    Button(action: { showingAddIntake = true }) {
                         Text("Custom")
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.waterBlue)
@@ -247,7 +240,6 @@ struct HomeView: View {
                 HStack(spacing: 16) {
                     // Water Quick Add Button
                     Button(action: {
-                        AnalyticsService.shared.trackIntakeAdded(type: .water, amount: viewModel.waterUnit == "ml" ? 250 : 8)
                         viewModel.addIntake(type: .water, amount: viewModel.waterUnit == "ml" ? 250 : 8)
                     }) {
                         VStack(spacing: 16) {
@@ -282,7 +274,6 @@ struct HomeView: View {
                     
                     // Caffeine Quick Add Button
                     Button(action: {
-                        AnalyticsService.shared.trackIntakeAdded(type: .caffeine, amount: viewModel.caffeineUnit == "mg" ? 95 : 1)
                         viewModel.addIntake(type: .caffeine, amount: viewModel.caffeineUnit == "mg" ? 95 : 1)
                     }) {
                         VStack(spacing: 16) {
@@ -428,7 +419,6 @@ struct EntryRow: View {
                     isDeleting = true
                 }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    AnalyticsService.shared.trackEvent(.intake_deleted)
                     viewModel.deleteEntry(entry)
                 }
             }) {

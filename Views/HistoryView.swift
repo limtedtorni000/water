@@ -199,8 +199,6 @@ struct HistoryView: View {
     }
     
     private func exportCSV() {
-        AnalyticsService.shared.trackEvent(.export_performed)
-        
         let csv = StorageService.shared.exportToCSV()
         
         if let data = csv.data(using: .utf8) {
@@ -239,7 +237,4 @@ struct HistoryView: View {
 
 #Preview {
     HistoryView()
-        .onAppear {
-            AnalyticsService.shared.trackScreen("History")
-        }
 }

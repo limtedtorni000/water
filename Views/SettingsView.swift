@@ -6,7 +6,6 @@ struct SettingsView: View {
     
     @StateObject private var settingsViewModel: SettingsViewModel
     @State private var reminderAuthorized = false
-    @State private var showingAnalyticsDashboard = false
     
     init(viewModel: IntakeViewModel) {
         self.viewModel = viewModel
@@ -34,8 +33,6 @@ struct SettingsView: View {
                     
                     remindersSection
                     
-                    analyticsSection
-                    
                     aboutSection
                 }
                 .scrollContentBackground(.hidden)
@@ -58,9 +55,6 @@ struct SettingsView: View {
                 
                 UINavigationBar.appearance().standardAppearance = appearance
                 UINavigationBar.appearance().scrollEdgeAppearance = appearance
-            }
-            .sheet(isPresented: $showingAnalyticsDashboard) {
-                AnalyticsDashboardView()
             }
         }
     }
@@ -187,32 +181,7 @@ struct SettingsView: View {
         }
     }
     
-    private var analyticsSection: some View {
-        Section(header: Text("Analytics")) {
-            Toggle("Share Usage Data", isOn: Binding(
-                get: { AnalyticsService.shared.isAnalyticsEnabled },
-                set: { AnalyticsService.shared.isAnalyticsEnabled = $0 }
-            ))
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Help improve HydraTrack by sharing anonymous usage data.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Text("We never collect personal information.")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                
-                Button(action: { showingAnalyticsDashboard = true }) {
-                    Text("View Analytics Dashboard")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.waterBlue)
-                }
-            }
-        }
-    }
-    
+      
     private var aboutSection: some View {
         Section(header: Text("About")) {
             HStack {
