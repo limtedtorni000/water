@@ -23,23 +23,17 @@ struct ContentView: View {
                     }
                     .tag(0)
                 
-                HistoryView()
-                    .tabItem {
-                        Label("History", systemImage: "chart.bar.fill")
-                    }
-                    .tag(1)
-                
                 AnalyticsView()
                     .tabItem {
                         Label("Analytics", systemImage: "chart.line.uptrend.xyaxis")
                     }
-                    .tag(2)
+                    .tag(1)
                 
                 SettingsView(viewModel: IntakeViewModel())
                     .tabItem {
                         Label("Settings", systemImage: "gearshape.fill")
                     }
-                    .tag(3)
+                    .tag(2)
             }
         }
         .onAppear {
