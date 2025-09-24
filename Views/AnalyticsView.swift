@@ -33,76 +33,47 @@ struct AnalyticsView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Background gradient with custom dark mode color
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.1, green: 0.1, blue: 0.15),
-                        Color(red: 0.05, green: 0.05, blue: 0.1)
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 40) {
-                        // Start directly with summary section
-                        
-                        // Summary cards with improved design
-                        summarySection
-                        
-                        // Charts with enhanced visuals
-                        chartsSection
-                        
-                        // Pattern insights
-                        patternsSection
-                        
-                        // Weekly highlights
-                        weeklyHighlightsSection
-                        
-                        // Insights preview
-                        insightsSection
-                        
-                        // Achievements showcase
-                        achievementsSection
-                        
-                        Spacer(minLength: 120)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 32)
+        ZStack {
+            // Background gradient with custom dark mode color
+            LinearGradient(
+                colors: [
+                    Color(red: 0.1, green: 0.1, blue: 0.15),
+                    Color(red: 0.05, green: 0.05, blue: 0.1)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 40) {
+                    // Start directly with summary section
+                    
+                    // Summary cards with improved design
+                    summarySection
+                    
+                    // Charts with enhanced visuals
+                    chartsSection
+                    
+                    // Pattern insights
+                    patternsSection
+                    
+                    // Weekly highlights
+                    weeklyHighlightsSection
+                    
+                    // Insights preview
+                    insightsSection
+                    
+                    // Achievements showcase
+                    achievementsSection
+                    
+                    Spacer(minLength: 120)
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 32)
             }
-            .navigationTitle("Analytics")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingInsights = true }) {
-                        Image(systemName: "lightbulb.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(.waterBlue)
-                            .symbolRenderingMode(.hierarchical)
-                    }
-                }
-            }
-            .onAppear {
-                // Customize navigation bar appearance
-                let appearance = UINavigationBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor.systemBackground
-                appearance.shadowColor = UIColor.clear
-                
-                // Configure title text attributes
-                appearance.titleTextAttributes = [
-                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold),
-                    .foregroundColor: UIColor.label
-                ]
-                
-                UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
-            }
+        }
             .sheet(isPresented: $showingInsights) {
                 InsightsView(insights: viewModel.insights)
             }
@@ -137,6 +108,13 @@ struct AnalyticsView: View {
                     .foregroundColor(Color.primary)
                 
                 Spacer()
+                
+                Button(action: { showingInsights = true }) {
+                    Image(systemName: "lightbulb.circle.fill")
+                        .font(.title3)
+                        .foregroundColor(.waterBlue)
+                        .symbolRenderingMode(.hierarchical)
+                }
                 
                 Menu {
                     ForEach(TimeRange.allCases, id: \.self) { range in

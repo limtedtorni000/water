@@ -3,7 +3,6 @@ import UIKit
 
 struct SettingsView: View {
     @ObservedObject var viewModel: IntakeViewModel
-    @Environment(\.dismiss) private var dismiss
     
     @StateObject private var settingsViewModel: SettingsViewModel
     @State private var reminderAuthorized = false
@@ -21,51 +20,46 @@ struct SettingsView: View {
     }
     
     var body: some View {
-        NavigationView {
-            ZStack {
-                // Modern gradient background
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.08, green: 0.08, blue: 0.12),
-                        Color(red: 0.04, green: 0.04, blue: 0.08)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 20) {
-                        goalsCard
-                            .transition(.scale.combined(with: .opacity))
-                        
-                        remindersCard
-                            .transition(.scale.combined(with: .opacity))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.1), value: settingsViewModel.reminderEnabled)
-                        
-                        aboutCard
-                            .transition(.scale.combined(with: .opacity))
-                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: true)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
+        ZStack {
+            // Modern gradient background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.08, green: 0.08, blue: 0.12),
+                    Color(red: 0.04, green: 0.04, blue: 0.08)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            ScrollView {
+                VStack(spacing: 20) {
+                    goalsCard
+                        .transition(.scale.combined(with: .opacity))
+                    
+                    remindersCard
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.1), value: settingsViewModel.reminderEnabled)
+                    
+                    aboutCard
+                        .transition(.scale.combined(with: .opacity))
+                        .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: true)
                 }
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.large)
-            .onAppear {
-                // Load current settings into temp values
-                tempWaterGoal = settingsViewModel.waterGoal
-                tempCaffeineGoal = settingsViewModel.caffeineGoal
-                tempWaterUnit = settingsViewModel.waterUnit
-                tempCaffeineUnit = settingsViewModel.caffeineUnit
-                hasUnsavedChanges = false
-                
-                checkReminderAuthorization()
-                syncReminderStatus()
+                .padding(.horizontal, 16)
+                .padding(.vertical, 12)
             }
         }
-        .navigationViewStyle(.stack)
+        .onAppear {
+            // Load current settings into temp values
+            tempWaterGoal = settingsViewModel.waterGoal
+            tempCaffeineGoal = settingsViewModel.caffeineGoal
+            tempWaterUnit = settingsViewModel.waterUnit
+            tempCaffeineUnit = settingsViewModel.caffeineUnit
+            hasUnsavedChanges = false
+            
+            checkReminderAuthorization()
+            syncReminderStatus()
+        }
     }
     
     // MARK: - Modern Card Components

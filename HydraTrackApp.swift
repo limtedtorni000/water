@@ -21,6 +21,7 @@ struct HydraTrackApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.viewContext)
+                .preferredColorScheme(.dark)
         }
     }
 }
