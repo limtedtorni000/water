@@ -48,7 +48,7 @@ struct AnalyticsView: View {
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 40) {
+                VStack(spacing: ResponsiveLayout.itemSpacing * 1.5) {
                     // Start directly with summary section
                     
                     // Summary cards with improved design
@@ -71,9 +71,9 @@ struct AnalyticsView: View {
                     
                     Spacer(minLength: 120)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 32)
+                .padding(.horizontal, ResponsiveLayout.horizontalPadding)
+                .padding(.vertical, ResponsiveLayout.verticalPadding)
+                .frame(maxWidth: .infinity)
             }
         }
             .sheet(isPresented: $showingInsights) {
@@ -104,7 +104,7 @@ struct AnalyticsView: View {
         
     // MARK: - Summary Section
     private var summarySection: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ResponsiveLayout.itemSpacing) {
             HStack {
                 Text("Overview")
                     .font(.title2)
@@ -173,10 +173,7 @@ struct AnalyticsView: View {
                 }
             }
             
-            LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 16),
-                GridItem(.flexible(), spacing: 16)
-            ], spacing: 16) {
+            LazyVGrid(columns: ResponsiveLayout.gridColumns, spacing: ResponsiveLayout.itemSpacing) {
                 LiquidCard(
                     title: "WATER",
                     value: String(format: "%.0f", viewModel.totalWater),
@@ -218,7 +215,7 @@ struct AnalyticsView: View {
     }
     
     private var chartsContent: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: ResponsiveLayout.itemSpacing * 1.3) {
             HStack {
                 Text("Consumption Patterns")
                     .font(.title2)
@@ -234,7 +231,7 @@ struct AnalyticsView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             
-            VStack(spacing: 24) {
+            VStack(spacing: ResponsiveLayout.itemSpacing) {
                 // Water chart with animation
                 EnhancedChartCard(
                     title: "Water Intake",
@@ -352,7 +349,7 @@ struct AnalyticsView: View {
     }
     
     private var patternsContent: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: ResponsiveLayout.itemSpacing * 1.2) {
             HStack {
                 Text("Habit Insights")
                     .font(.title2)
@@ -371,7 +368,7 @@ struct AnalyticsView: View {
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 16) {
+            ], spacing: ResponsiveLayout.itemSpacing) {
                 ForEach(0..<4, id: \.self) { index in
                     Group {
                         if index == 0 {
@@ -427,7 +424,7 @@ struct AnalyticsView: View {
     
     // MARK: - Weekly Highlights Section
     private var weeklyHighlightsSection: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: ResponsiveLayout.itemSpacing * 1.2) {
             HStack {
                 Text("Weekly Highlights")
                     .font(.title2)
@@ -510,7 +507,7 @@ struct AnalyticsView: View {
     }
     
     private var insightsContent: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ResponsiveLayout.itemSpacing) {
             HStack {
                 Text("Smart Insights")
                     .font(.title2)
@@ -597,7 +594,7 @@ struct AnalyticsView: View {
     }
     
     private var achievementsContent: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ResponsiveLayout.itemSpacing) {
             HStack {
                 Text("Achievements")
                     .font(.title2)

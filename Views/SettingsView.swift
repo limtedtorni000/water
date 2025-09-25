@@ -35,7 +35,7 @@ struct SettingsView: View {
             .ignoresSafeArea()
             
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: ResponsiveLayout.itemSpacing) {
                     goalsCard
                         .transition(.scale.combined(with: .opacity))
                     
@@ -59,8 +59,9 @@ struct SettingsView: View {
                         .transition(.scale.combined(with: .opacity))
                         .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: true)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, ResponsiveLayout.horizontalPadding)
+                .padding(.vertical, ResponsiveLayout.verticalPadding)
+                .frame(maxWidth: .infinity)
             }
         }
         .onAppear {

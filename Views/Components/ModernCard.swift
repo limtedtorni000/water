@@ -18,8 +18,9 @@ struct ModernCard<Content: View>: View {
     var body: some View {
         content
             .padding(padding)
+            .frame(maxWidth: .infinity)
             .background(
-                RoundedRectangle(cornerRadius: 24, style: .continuous)
+                RoundedRectangle(cornerRadius: ResponsiveLayout.cardCornerRadius, style: .continuous)
                     .fill(.regularMaterial)
                     .shadow(
                         color: style.shadowColor,

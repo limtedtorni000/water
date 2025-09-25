@@ -14,7 +14,7 @@ struct HomeView: View {
     }()
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Background gradient with custom dark mode color
                 LinearGradient(
@@ -28,7 +28,7 @@ struct HomeView: View {
                 .ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
+                    VStack(alignment: .leading, spacing: ResponsiveLayout.itemSpacing) {
                         // Custom Header to match the image layout
                         HStack {
                             Text("HydraTrack")
@@ -66,8 +66,9 @@ struct HomeView: View {
                         // Bottom spacing for safe area and tab bar
                         Spacer(minLength: 80)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.top) // Provides default top padding below the status bar
+                    .padding(.horizontal, ResponsiveLayout.horizontalPadding)
+                    .padding(.vertical, ResponsiveLayout.verticalPadding)
+                    .frame(maxWidth: .infinity)
                 }
             }
             .navigationBarHidden(true) // Hides the original navigation bar
@@ -102,12 +103,12 @@ struct HomeView: View {
     
     // MARK: - Progress Section
     private var progressSection: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: ResponsiveLayout.itemSpacing) {
             // Water Progress Card
             ModernCard(
                 padding: EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
             ) {
-                VStack(spacing: 16) {
+                VStack(spacing: ResponsiveLayout.itemSpacing) {
                     ZStack {
                         ProgressRing(
                             progress: animateProgress ? viewModel.waterProgress : 0,
@@ -150,7 +151,7 @@ struct HomeView: View {
             ModernCard(
                 padding: EdgeInsets(top: 20, leading: 12, bottom: 20, trailing: 12)
             ) {
-                VStack(spacing: 16) {
+                VStack(spacing: ResponsiveLayout.itemSpacing) {
                     ZStack {
                         ProgressRing(
                             progress: animateProgress ? viewModel.caffeineProgress : 0,
@@ -247,7 +248,7 @@ struct HomeView: View {
                     }
                 }
                 
-                HStack(spacing: 16) {
+                HStack(spacing: ResponsiveLayout.itemSpacing) {
                     // Water Quick Add Button
                     Button(action: {
                         viewModel.addIntake(type: .water, amount: viewModel.waterUnit == "ml" ? 250 : 8)
