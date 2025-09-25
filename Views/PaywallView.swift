@@ -25,22 +25,22 @@ struct PaywallView: View {
                     VStack(spacing: 0) {
                         // Hero section with animated gradient
                         heroSection
-                            .frame(height: geometry.size.height * 0.35)
+                            .frame(height: geometry.size.height * 0.30)
                         
                         // Features section
                         featuresSection
                             .padding(.horizontal, 24)
-                            .padding(.top, 32)
+                            .padding(.top, 24)
                         
                         // Pricing section
                         pricingSection
                             .padding(.horizontal, 24)
-                            .padding(.top, 32)
+                            .padding(.top, 28)
                         
                         // Footer
                         footerSection
                             .padding(.horizontal, 24)
-                            .padding(.top, 24)
+                            .padding(.top, 20)
                             .padding(.bottom, 40)
                     }
                 }
@@ -104,41 +104,41 @@ struct PaywallView: View {
                 Spacer()
             }
             
-            VStack(spacing: 32) {
+            VStack(spacing: 24) {
                 // App icon and title
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     ZStack {
                         Circle()
                             .fill(Color.white.opacity(0.2))
-                            .frame(width: 80, height: 80)
+                            .frame(width: 70, height: 70)
                         
                         Image(systemName: "drop.fill")
-                            .font(.system(size: 40, weight: .bold))
+                            .font(.system(size: 36, weight: .bold))
                             .foregroundColor(.white)
                     }
                     
                     Text("HydraTrack")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white.opacity(0.9))
                 }
                 .scaleEffect(animateGradient ? 1.05 : 1.0)
                 .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateGradient)
                 
-                VStack(spacing: 12) {
+                VStack(spacing: 8) {
                     Text("Unlock Premium")
-                        .font(.system(size: 42, weight: .black))
+                        .font(.system(size: 38, weight: .black))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
                     
                     Text("Everything you need to master hydration")
-                        .font(.system(size: 18, weight: .medium))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white.opacity(0.85))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                 }
                 
                 // Social proof badges
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     SocialBadge(icon: "star.fill", text: "4.8 Rating")
                     SocialBadge(icon: "person.2.fill", text: "50K+ Users")
                     SocialBadge(icon: "shield.fill", text: "Secure")
@@ -150,25 +150,25 @@ struct PaywallView: View {
                     ZStack {
                         Circle()
                             .fill(Color.white.opacity(0.2))
-                            .frame(width: 36, height: 36)
+                            .frame(width: 32, height: 32)
                         
                         Image(systemName: "xmark")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.white)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
                 .padding(.trailing, 20)
-                .padding(.top, 10)
+                .padding(.top, 8)
             }
-            .padding(.top, 60)
+            .padding(.top, 50)
         }
     }
     
     // MARK: - Features Section
     private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Premium Features")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
@@ -180,9 +180,9 @@ struct PaywallView: View {
             .opacity(featureOpacity)
             
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: 12),
-                GridItem(.flexible(), spacing: 12)
-            ], spacing: 12) {
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ], spacing: 16) {
                 EnhancedFeatureCard(
                     icon: "chart.line.uptrend.xyaxis",
                     title: "Advanced Analytics",
@@ -501,18 +501,20 @@ struct EnhancedFeatureCard: View {
                     .foregroundColor(color)
             }
             
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(.primary)
+                    .lineLimit(1)
                 
                 Text(description)
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .regular))
                     .foregroundColor(.secondary)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
             
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 18))
