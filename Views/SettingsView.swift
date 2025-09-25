@@ -49,6 +49,12 @@ struct SettingsView: View {
                             .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.15), value: true)
                     }
                     
+                    if subscriptionService.isSubscribed {
+                        exportCard
+                            .transition(.scale.combined(with: .opacity))
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.15), value: true)
+                    }
+                    
                     aboutCard
                         .transition(.scale.combined(with: .opacity))
                         .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.2), value: true)
@@ -438,6 +444,39 @@ struct SettingsView: View {
         .sheet(isPresented: $showPaywall) {
             PaywallView()
         }
+    }
+    
+    private var exportCard: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "square.and.arrow.down")
+                    .font(.title3)
+                    .foregroundColor(.textPrimary)
+                Text("Export Data")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+            }
+            
+            Button(action: exportData) {
+                HStack {
+                    Image(systemName: "doc.fill")
+                        .font(.subheadline)
+                    Text("Export to CSV")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+        }
+        .padding(20)
+        .background(Color.secondaryBackground)
+        .cornerRadius(20)
     }
     
     private var aboutCard: some View {
@@ -1173,6 +1212,69 @@ struct SettingsView: View {
     
     private func resetOnboarding() {
         UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
+        
+        // Show confirmation message with option to restart now
+        let alert = UIAlertController(
+            title: "Onboarding Reset",
+            message: "Onboarding has been reset. Would you like to see it now?",
+            preferredStyle: .alert
+        )
+        
+        alert.addAction(UIAlertAction(title: "Not Now", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Show Now", style: .default) { _ in
+            // Force restart by showing onboarding
+            DispatchQueue.main.async {
+                // Post notification to trigger onboarding
+                NotificationCenter.default.post(name: Notification.Name("ShowOnboarding"), object: nil)
+            }
+        })
+        
+        // Present the alert
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+           let window = windowScene.windows.first,
+           let rootVC = window.rootViewController {
+            
+            var topVC = rootVC
+            while let presentedVC = topVC.presentedViewController {
+                topVC = presentedVC
+            }
+            
+            topVC.present(alert, animated: true)
+        }
+    }
+    
+    private func exportData() {
+        let csvData = StorageService.shared.exportToCSV()
+        
+        // Create a temporary file URL
+        let tempDir = FileManager.default.temporaryDirectory
+        let fileURL = tempDir.appendingPathComponent("hydratrack_data.csv")
+        
+        do {
+            try csvData.write(to: fileURL, atomically: true, encoding: .utf8)
+            
+            // Create and present the share sheet
+            let activityVC = UIActivityViewController(
+                activityItems: [fileURL],
+                applicationActivities: nil
+            )
+            
+            // Get the root view controller
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+               let window = windowScene.windows.first,
+               let rootVC = window.rootViewController {
+                
+                // Find the topmost presented view controller
+                var topVC = rootVC
+                while let presentedVC = topVC.presentedViewController {
+                    topVC = presentedVC
+                }
+                
+                topVC.present(activityVC, animated: true)
+            }
+        } catch {
+            print("Failed to export data: \(error)")
+        }
     }
     
     private func applySettings() {

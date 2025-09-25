@@ -239,24 +239,24 @@ struct OnboardingPage2: View {
             
             VStack(spacing: 20) {
                 // Animated cards
-                ForEach(0..<3, id: \.self) { index in
+                ForEach(0..<2, id: \.self) { index in
                     HStack {
                         ZStack {
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(Color(.secondarySystemBackground))
                                 .frame(width: 40, height: 40)
                             
-                            Image(systemName: ["drop.fill", "mug.fill", "leaf.fill"][index])
+                            Image(systemName: ["drop.fill", "mug.fill"][index])
                                 .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor([.blue, .brown, .green][index])
+                                .foregroundColor([.blue, .brown][index])
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(["Water", "Coffee", "Tea"][index])
+                            Text(["Water", "Coffee"][index])
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                             
-                            Text(["250ml", "180ml", "200ml"][index])
+                            Text(["250ml", "180ml"][index])
                                 .font(.system(size: 14))
                                 .foregroundColor(.white.opacity(0.7))
                         }

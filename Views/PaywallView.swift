@@ -54,7 +54,19 @@ struct PaywallView: View {
                 .background(Color(.systemBackground))
                 .ignoresSafeArea()
             }
-            .navigationBarHidden(true)
+            .navigationBarHidden(!isOnboarding)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                if isOnboarding {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Skip") {
+                            dismiss()
+                            onDismiss?()
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+            }
             .onChange(of: subscriptionService.isSubscribed) { isSubscribed in
                 if isSubscribed && isOnboarding {
                     dismiss()

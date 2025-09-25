@@ -44,8 +44,24 @@ struct ContentView: View {
             appearance.configureWithOpaqueBackground()
             UITabBar.appearance().standardAppearance = appearance
             
-            // Check if first launch
-            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+            // Check if first launch and not subscribed
+            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") && !subscriptionService.isSubscribed {
+                showOnboarding = true
+            }
+            
+            // Listen for onboarding reset notification
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name("ShowOnboarding"),
+                object: nil,
+                queue: .main
+            ) { _ in
+                if !subscriptionService.isSubscribed {
+                    showOnboarding = true
+                }
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("ShowOnboarding"))) { _ in
+            if !subscriptionService.isSubscribed {
                 showOnboarding = true
             }
         }

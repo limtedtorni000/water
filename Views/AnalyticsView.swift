@@ -342,6 +342,16 @@ struct AnalyticsView: View {
     
     // MARK: - Patterns Section
     private var patternsSection: some View {
+        Group {
+            if subscriptionService.isSubscribed {
+                patternsContent
+            } else {
+                patternsLocked
+            }
+        }
+    }
+    
+    private var patternsContent: some View {
         VStack(spacing: 28) {
             HStack {
                 Text("Habit Insights")
@@ -405,6 +415,14 @@ struct AnalyticsView: View {
                 }
             }
         }
+    }
+    
+    private var patternsLocked: some View {
+        PremiumOverlay(
+            title: "Habit Insights",
+            description: "Discover your hydration patterns and optimal drinking times",
+            onUpgrade: { showPaywall = true }
+        )
     }
     
     // MARK: - Weekly Highlights Section
