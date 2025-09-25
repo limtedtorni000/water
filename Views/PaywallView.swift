@@ -25,7 +25,7 @@ struct PaywallView: View {
                     VStack(spacing: 0) {
                         // Hero section with animated gradient
                         heroSection
-                            .frame(height: geometry.size.height * 0.30)
+                            .frame(height: geometry.size.height * 0.28)
                         
                         // Features section
                         featuresSection
@@ -104,41 +104,41 @@ struct PaywallView: View {
                 Spacer()
             }
             
-            VStack(spacing: 24) {
+            VStack(spacing: 16) {
                 // App icon and title
-                VStack(spacing: 12) {
+                VStack(spacing: 6) {
                     ZStack {
                         Circle()
                             .fill(Color.white.opacity(0.2))
-                            .frame(width: 70, height: 70)
+                            .frame(width: 60, height: 60)
                         
                         Image(systemName: "drop.fill")
-                            .font(.system(size: 36, weight: .bold))
+                            .font(.system(size: 30, weight: .bold))
                             .foregroundColor(.white)
                     }
                     
                     Text("HydraTrack")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white.opacity(0.9))
                 }
                 .scaleEffect(animateGradient ? 1.05 : 1.0)
                 .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateGradient)
                 
-                VStack(spacing: 8) {
+                VStack(spacing: 4) {
                     Text("Unlock Premium")
-                        .font(.system(size: 38, weight: .black))
+                        .font(.system(size: 34, weight: .black))
                         .foregroundColor(.white)
                         .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
                     
                     Text("Everything you need to master hydration")
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.white.opacity(0.85))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, 28)
                 }
                 
                 // Social proof badges
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     SocialBadge(icon: "star.fill", text: "4.8 Rating")
                     SocialBadge(icon: "person.2.fill", text: "50K+ Users")
                     SocialBadge(icon: "shield.fill", text: "Secure")
@@ -150,18 +150,17 @@ struct PaywallView: View {
                     ZStack {
                         Circle()
                             .fill(Color.white.opacity(0.2))
-                            .frame(width: 32, height: 32)
+                            .frame(width: 28, height: 28)
                         
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.white)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 20)
-                .padding(.top, 8)
+                .padding(.trailing, 16)
             }
-            .padding(.top, 50)
+            .padding(.top, 40)
         }
     }
     
