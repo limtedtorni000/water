@@ -271,7 +271,7 @@ struct SettingsView: View {
                             .onChange(of: settingsViewModel.reminderEnabled) { _, newValue in
                                 triggerHaptic(.light)
                                 if newValue {
-                                    ReminderService.shared.scheduleHydrationReminder(interval: TimeInterval(settingsViewModel.reminderInterval * 60))
+                                    ReminderService.shared.scheduleReminder(type: settingsViewModel.reminderType, interval: TimeInterval(settingsViewModel.reminderInterval * 60))
                                 } else {
                                     ReminderService.shared.cancelAllReminders()
                                 }
@@ -304,7 +304,37 @@ struct SettingsView: View {
                         .onChange(of: settingsViewModel.reminderInterval) { _, newValue in
                             triggerHaptic(.light)
                             if settingsViewModel.reminderEnabled {
-                                ReminderService.shared.scheduleHydrationReminder(interval: TimeInterval(newValue * 60))
+                                ReminderService.shared.scheduleReminder(type: settingsViewModel.reminderType, interval: TimeInterval(newValue * 60))
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .background(Color.secondaryBackground)
+                    .cornerRadius(16)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Text("Reminder Type")
+                                .font(.subheadline)
+                                .foregroundColor(.textSecondary)
+                            Spacer()
+                            Text(settingsViewModel.reminderType == .water ? "Water" : settingsViewModel.reminderType == .caffeine ? "Coffee" : "Both")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(Color.waterBlue)
+                        }
+                        
+                        Picker("Reminder Type", selection: $settingsViewModel.reminderType) {
+                            ForEach(IntakeType.allCases, id: \.self) { type in
+                                Text(type == .water ? "Water" : type == .caffeine ? "Coffee" : "Both")
+                                    .tag(type)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .onChange(of: settingsViewModel.reminderType) { _, newValue in
+                            triggerHaptic(.light)
+                            if settingsViewModel.reminderEnabled {
+                                ReminderService.shared.scheduleReminder(type: newValue, interval: TimeInterval(settingsViewModel.reminderInterval * 60))
                             }
                         }
                     }

@@ -8,6 +8,7 @@ class SettingsViewModel: ObservableObject {
     @Published var caffeineUnit: String = "mg"
     @Published var reminderEnabled: Bool = false
     @Published var reminderInterval: Int = 60
+    @Published var reminderType: IntakeType = .both
     
     private let userDefaults = UserDefaults.standard
     private let intakeViewModel: IntakeViewModel
@@ -25,6 +26,10 @@ class SettingsViewModel: ObservableObject {
         caffeineUnit = intakeViewModel.caffeineUnit
         reminderEnabled = userDefaults.bool(forKey: "reminderEnabled")
         reminderInterval = userDefaults.integer(forKey: "reminderInterval") == 0 ? 60 : userDefaults.integer(forKey: "reminderInterval")
+        if let reminderTypeString = userDefaults.string(forKey: "reminderType"),
+           let savedType = IntakeType(rawValue: reminderTypeString) {
+            reminderType = savedType
+        }
     }
     
     func saveSettings() {
@@ -37,6 +42,7 @@ class SettingsViewModel: ObservableObject {
         // Save reminder settings to UserDefaults
         userDefaults.set(reminderEnabled, forKey: "reminderEnabled")
         userDefaults.set(reminderInterval, forKey: "reminderInterval")
+        userDefaults.set(reminderType.rawValue, forKey: "reminderType")
     }
     
     func resetToDefaults() {
@@ -46,6 +52,7 @@ class SettingsViewModel: ObservableObject {
         caffeineUnit = "mg"
         reminderEnabled = false
         reminderInterval = 60
+        reminderType = .both
         saveSettings()
     }
 }

@@ -95,7 +95,6 @@ struct AnalyticsView: View {
                 }
             }
         }
-    }
     
         
     // MARK: - Summary Section

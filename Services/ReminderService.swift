@@ -14,7 +14,12 @@ class ReminderService {
                     let reminderEnabled = UserDefaults.standard.bool(forKey: "reminderEnabled")
                     if reminderEnabled {
                         let reminderInterval = UserDefaults.standard.integer(forKey: "reminderInterval") == 0 ? 60 : UserDefaults.standard.integer(forKey: "reminderInterval")
-                        self.scheduleHydrationReminder(interval: TimeInterval(reminderInterval * 60))
+                        if let reminderTypeString = UserDefaults.standard.string(forKey: "reminderType"),
+                           let reminderType = IntakeType(rawValue: reminderTypeString) {
+                            self.scheduleReminder(type: reminderType, interval: TimeInterval(reminderInterval * 60))
+                        } else {
+                            self.scheduleReminder(type: .both, interval: TimeInterval(reminderInterval * 60))
+                        }
                     }
                 } else if let error = error {
                     print("❌ Notification authorization error: \(error)")
@@ -25,19 +30,38 @@ class ReminderService {
         }
     }
     
-    func scheduleHydrationReminder(interval: TimeInterval = 3600) {
+    func scheduleReminder(type: IntakeType, interval: TimeInterval = 3600) {
         cancelAllReminders()
         
         let content = UNMutableNotificationContent()
-        content.title = "Time to hydrate!"
-        content.body = "Don't forget to drink some water to stay healthy."
+        var title = ""
+        var body = ""
+        var identifier = ""
+        
+        switch type {
+        case .water:
+            title = "Time to hydrate!"
+            body = "Don't forget to drink some water to stay healthy."
+            identifier = "waterReminder"
+        case .caffeine:
+            title = "Coffee break time!"
+            body = "How about a cup of coffee to boost your energy?"
+            identifier = "caffeineReminder"
+        case .both:
+            title = "Time for a break!"
+            body = "Stay hydrated and energized - time for water or coffee!"
+            identifier = "bothReminder"
+        }
+        
+        content.title = title
+        content.body = body
         content.sound = UNNotificationSound.default
         content.badge = 1
         
         // Ensure minimum interval is 30 seconds for testing
         let minimumInterval = max(30, interval)
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: minimumInterval, repeats: true)
-        let request = UNNotificationRequest(identifier: "hydrationReminder", content: content, trigger: trigger)
+        let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
         
         UNUserNotificationCenter.current().add(request) { error in
             DispatchQueue.main.async {
@@ -46,10 +70,15 @@ class ReminderService {
                     // If scheduling failed, clear the saved settings to prevent inconsistent state
                     UserDefaults.standard.set(false, forKey: "reminderEnabled")
                 } else {
-                    print("✅ Hydration reminder scheduled successfully with interval: \(minimumInterval / 60) minutes")
+                    print("✅ \(type) reminder scheduled successfully with interval: \(minimumInterval / 60) minutes")
                 }
             }
         }
+    }
+    
+    // Keep old method for backward compatibility
+    func scheduleHydrationReminder(interval: TimeInterval = 3600) {
+        scheduleReminder(type: .water, interval: interval)
     }
     
     func getPendingReminders(completion: @escaping ([UNNotificationRequest]) -> Void) {
