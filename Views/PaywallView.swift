@@ -30,7 +30,7 @@ struct PaywallView: View {
                         // Features section
                         featuresSection
                             .padding(.horizontal, 24)
-                            .padding(.top, 24)
+                            .padding(.top, 36)
                         
                         // Pricing section
                         pricingSection
@@ -144,21 +144,6 @@ struct PaywallView: View {
                     SocialBadge(icon: "shield.fill", text: "Secure")
                 }
                 .opacity(featureOpacity)
-                
-                // Close button
-                Button(action: { dismiss() }) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.2))
-                            .frame(width: 28, height: 28)
-                        
-                        Image(systemName: "xmark")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.white)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 16)
             }
             .padding(.top, 40)
         }

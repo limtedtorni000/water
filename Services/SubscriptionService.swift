@@ -22,6 +22,9 @@ class SubscriptionService: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
     
+    private let userDefaults = UserDefaults.standard
+    private let lifetimePurchaseKey = "lifetimePurchase"
+    
     private var updateListenerTask: Task<Void, Error>?
     
     // Product IDs
@@ -29,6 +32,8 @@ class SubscriptionService: ObservableObject {
     private let lifetimeProductID = "com.HydraTrack.premium.lifetime"
     
     init() {
+        // Check for lifetime purchase on app launch
+        checkLifetimePurchase()
         updateListenerTask = listenForTransactions()
     }
     
@@ -62,6 +67,15 @@ class SubscriptionService: ObservableObject {
             switch result {
             case .success(let verification):
                 let transaction = try await checkVerified(verification)
+                
+                // For lifetime purchases, store the purchase state
+                if product.id == lifetimeProductID {
+                    userDefaults.set(true, forKey: lifetimePurchaseKey)
+                    await MainActor.run {
+                        self.isSubscribed = true
+                    }
+                    showAlert(message: "Lifetime purchase successful! You now have access to all premium features.")
+                }
                 
                 // For consumables or non-renewing purchases
                 await transaction.finish()
@@ -97,6 +111,8 @@ class SubscriptionService: ObservableObject {
     // MARK: - Subscription Status
     
     func updateSubscriptionStatus() async {
+        var hasActiveSubscription = false
+        
         // Check for active subscriptions
         for await result in Transaction.currentEntitlements {
             do {
@@ -108,23 +124,37 @@ class SubscriptionService: ObservableObject {
                         self.isSubscribed = true
                         self.subscriptionStatus = status
                     }
-                    return
+                    hasActiveSubscription = true
+                    break
                 } else if transaction.productType == .nonRenewable {
-                    // Check if lifetime purchase is within validity period
-                    await MainActor.run {
-                        self.isSubscribed = true
+                    // Handle lifetime subscription
+                    if transaction.productID == lifetimeProductID {
+                        // Mark lifetime purchase
+                        userDefaults.set(true, forKey: lifetimePurchaseKey)
+                        await MainActor.run {
+                            self.isSubscribed = true
+                        }
+                        hasActiveSubscription = true
+                        break
                     }
-                    return
                 }
             } catch {
                 print("Transaction verification failed: \(error)")
             }
         }
         
-        // No active subscription found
-        await MainActor.run {
-            self.isSubscribed = false
-            self.subscriptionStatus = nil
+        // If no active subscription found, check for stored lifetime purchase
+        if !hasActiveSubscription {
+            if userDefaults.bool(forKey: lifetimePurchaseKey) {
+                await MainActor.run {
+                    self.isSubscribed = true
+                }
+            } else {
+                await MainActor.run {
+                    self.isSubscribed = false
+                    self.subscriptionStatus = nil
+                }
+            }
         }
     }
     
@@ -167,6 +197,12 @@ class SubscriptionService: ObservableObject {
     }
     
     // MARK: - Helper Methods
+    
+    private func checkLifetimePurchase() {
+        if userDefaults.bool(forKey: lifetimePurchaseKey) {
+            self.isSubscribed = true
+        }
+    }
     
     private func checkVerified<T>(_ result: VerificationResult<T>) async throws -> T {
         switch result {
