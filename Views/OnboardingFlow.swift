@@ -115,19 +115,7 @@ struct OnboardingFlow: View {
                                 }
                                 .padding(.horizontal, 24)
                             }
-                            
-                            // Page indicator dots
-                            HStack(spacing: 8) {
-                                ForEach(0..<totalPages, id: \.self) { index in
-                                    Circle()
-                                        .fill(index == currentPage ? Color.white : Color.white.opacity(0.3))
-                                        .frame(width: 8, height: 8)
-                                        .scaleEffect(index == currentPage ? 1.2 : 1.0)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: currentPage)
-                                }
-                            }
-                            .padding(.bottom, 40)
-                        }
+                          }
                     }
                 }
                 .background(
