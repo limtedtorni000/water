@@ -20,6 +20,14 @@ struct PaywallView: View {
     let isOnboarding: Bool
     var onDismiss: (() -> Void)?
     
+    private var isiPad: Bool {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        return false
+        #endif
+    }
+    
     init(isOnboarding: Bool = false, onDismiss: (() -> Void)? = nil) {
         self.isOnboarding = isOnboarding
         self.onDismiss = onDismiss
@@ -103,11 +111,17 @@ struct PaywallView: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
-            .hueRotation(.degrees(animateGradient ? 30 : 0))
-            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: animateGradient)
+            .hueRotation(.degrees(animateGradient ? (isiPad ? 5 : 30) : 0))
+            .animation(isiPad ? nil : .easeInOut(duration: 6).repeatForever(autoreverses: true), value: animateGradient)
             .onAppear {
                 animateGradient = true
-                withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
+                if !isiPad {
+                    withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
+                        showFeatures = true
+                        featureOpacity = 1.0
+                    }
+                } else {
+                    // No animation for iPad
                     showFeatures = true
                     featureOpacity = 1.0
                 }
@@ -146,8 +160,8 @@ struct PaywallView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(.white.opacity(0.9))
                 }
-                .scaleEffect(animateGradient ? 1.05 : 1.0)
-                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateGradient)
+                .scaleEffect(animateGradient ? (isiPad ? 1.0 : 1.05) : 1.0)
+                .animation(isiPad ? nil : .easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateGradient)
                 
                 VStack(spacing: 4) {
                     Text("Unlock Premium")
@@ -168,7 +182,7 @@ struct PaywallView: View {
                     SocialBadge(icon: "person.2.fill", text: "50K+ Users")
                     SocialBadge(icon: "shield.fill", text: "Secure")
                 }
-                .opacity(featureOpacity)
+                .opacity(isiPad ? 1.0 : featureOpacity)
             }
             .padding(.top, 40)
         }
@@ -186,7 +200,7 @@ struct PaywallView: View {
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.secondary)
             }
-            .opacity(featureOpacity)
+            .opacity(isiPad ? 1.0 : featureOpacity)
             
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 16),
@@ -249,7 +263,7 @@ struct PaywallView: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
             }
-            .opacity(featureOpacity)
+            .opacity(isiPad ? 1.0 : featureOpacity)
             
             if subscriptionService.isLoadingProducts {
                 VStack(spacing: 16) {
@@ -273,7 +287,7 @@ struct PaywallView: View {
                             }
                         }
                     )
-                    .opacity(featureOpacity)
+                    .opacity(isiPad ? 1.0 : featureOpacity)
                 }
             }
             
@@ -377,6 +391,14 @@ struct ProductOptionCard: View {
     let isSelected: Bool
     let onTap: () -> Void
     
+    private var isiPad: Bool {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        return false
+        #endif
+    }
+    
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 16) {
@@ -458,8 +480,8 @@ struct ProductOptionCard: View {
             )
         }
         .disabled(SubscriptionService.shared.isPurchasing)
-        .scaleEffect(isSelected ? 1.02 : 1.0)
-        .animation(.easeInOut(duration: 0.2), value: isSelected)
+        .scaleEffect(isSelected ? (isiPad ? 1.0 : 1.02) : 1.0)
+        .animation(isiPad ? nil : .easeInOut(duration: 0.2), value: isSelected)
     }
 }
 
@@ -544,6 +566,14 @@ struct ModernProductCard: View {
     let isSelected: Bool
     let isPopular: Bool
     let onTap: () -> Void
+    
+    private var isiPad: Bool {
+        #if os(iOS)
+        return UIDevice.current.userInterfaceIdiom == .pad
+        #else
+        return false
+        #endif
+    }
     
     var body: some View {
         Button(action: onTap) {
@@ -668,8 +698,8 @@ struct ModernProductCard: View {
             )
         }
         .disabled(SubscriptionService.shared.isPurchasing)
-        .scaleEffect(isSelected ? 1.03 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSelected)
+        .scaleEffect(isSelected ? (isiPad ? 1.0 : 1.03) : 1.0)
+        .animation(isiPad ? nil : .spring(response: 0.3, dampingFraction: 0.8), value: isSelected)
     }
 }
 
