@@ -17,6 +17,13 @@ struct PaywallView: View {
     @State private var animateGradient = false
     @State private var showFeatures = false
     @State private var featureOpacity = 0.0
+    let isOnboarding: Bool
+    var onDismiss: (() -> Void)?
+    
+    init(isOnboarding: Bool = false, onDismiss: (() -> Void)? = nil) {
+        self.isOnboarding = isOnboarding
+        self.onDismiss = onDismiss
+    }
     
     var body: some View {
         NavigationView {
@@ -48,6 +55,12 @@ struct PaywallView: View {
                 .ignoresSafeArea()
             }
             .navigationBarHidden(true)
+            .onChange(of: subscriptionService.isSubscribed) { isSubscribed in
+                if isSubscribed && isOnboarding {
+                    dismiss()
+                    onDismiss?()
+                }
+            }
             .alert("Subscription", isPresented: $subscriptionService.showAlert) {
                 Button("OK") { }
             } message: {

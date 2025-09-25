@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var selectedTab = 0
     @EnvironmentObject var subscriptionService: SubscriptionService
+    @State private var showOnboarding = false
     
     var body: some View {
         ZStack {
@@ -42,6 +43,15 @@ struct ContentView: View {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
             UITabBar.appearance().standardAppearance = appearance
+            
+            // Check if first launch
+            if !UserDefaults.standard.bool(forKey: "hasCompletedOnboarding") {
+                showOnboarding = true
+            }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingFlow()
+                .environmentObject(subscriptionService)
         }
     }
 }

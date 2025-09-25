@@ -504,6 +504,26 @@ struct SettingsView: View {
                         .background(Color.warningRed)
                         .cornerRadius(12)
                     }
+                    
+                    Button(action: {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            resetOnboarding()
+                            triggerHaptic(.medium)
+                        }
+                    }) {
+                        HStack {
+                            Image(systemName: "person.badge.plus")
+                                .font(.subheadline)
+                            Text("Reset Onboarding")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                        }
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.blue)
+                        .cornerRadius(12)
+                    }
                 }
                 .padding(16)
                 .background(Color.secondaryBackground)
@@ -1149,6 +1169,10 @@ struct SettingsView: View {
                 interval: TimeInterval(settingsViewModel.reminderInterval * 60)
             )
         }
+    }
+    
+    private func resetOnboarding() {
+        UserDefaults.standard.set(false, forKey: "hasCompletedOnboarding")
     }
     
     private func applySettings() {
