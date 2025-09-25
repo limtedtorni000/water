@@ -12,6 +12,7 @@ import CoreData
 @main
 struct HydraTrackApp: App {
     let persistenceController = StorageService.shared.persistentContainer
+    @StateObject private var subscriptionService = SubscriptionService.shared
     
     init() {
         ReminderService.shared.requestAuthorization()
@@ -21,7 +22,11 @@ struct HydraTrackApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.viewContext)
+                .environmentObject(subscriptionService)
                 .preferredColorScheme(.dark)
+                .task {
+                    await subscriptionService.updateSubscriptionStatus()
+                }
         }
     }
 }

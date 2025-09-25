@@ -3,8 +3,10 @@ import Charts
 
 struct AnalyticsView: View {
     @StateObject private var viewModel = AnalyticsViewModel(intakeViewModel: IntakeViewModel.shared)
+    @EnvironmentObject var subscriptionService: SubscriptionService
     @State private var selectedTimeRange: TimeRange = .today
     @State private var showingInsights = false
+    @State private var showPaywall = false
     @State private var animateCharts = false
     
     enum TimeRange: String, CaseIterable {
@@ -76,6 +78,9 @@ struct AnalyticsView: View {
         }
             .sheet(isPresented: $showingInsights) {
                 InsightsView(insights: viewModel.insights)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
             }
             .onAppear {
                 viewModel.loadData(for: selectedTimeRange)
@@ -203,6 +208,16 @@ struct AnalyticsView: View {
     
     // MARK: - Charts Section
     private var chartsSection: some View {
+        Group {
+            if subscriptionService.isSubscribed {
+                chartsContent
+            } else {
+                chartsLocked
+            }
+        }
+    }
+    
+    private var chartsContent: some View {
         VStack(spacing: 32) {
             HStack {
                 Text("Consumption Patterns")
@@ -315,6 +330,14 @@ struct AnalyticsView: View {
                 }
             }
         }
+    }
+    
+    private var chartsLocked: some View {
+        PremiumOverlay(
+            title: "Advanced Analytics",
+            description: "Unlock detailed charts and consumption pattern analysis",
+            onUpgrade: { showPaywall = true }
+        )
     }
     
     // MARK: - Patterns Section
@@ -459,9 +482,19 @@ struct AnalyticsView: View {
     }
     
     private var insightsSection: some View {
+        Group {
+            if subscriptionService.isSubscribed {
+                insightsContent
+            } else {
+                insightsLocked
+            }
+        }
+    }
+    
+    private var insightsContent: some View {
         VStack(spacing: 24) {
             HStack {
-                Text("AI Insights")
+                Text("Smart Insights")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundColor(.primary)
@@ -527,7 +560,25 @@ struct AnalyticsView: View {
         }
     }
     
+    private var insightsLocked: some View {
+        PremiumOverlay(
+            title: "Smart Insights",
+            description: "Get personalized recommendations and insights based on your hydration patterns",
+            onUpgrade: { showPaywall = true }
+        )
+    }
+    
     private var achievementsSection: some View {
+        Group {
+            if subscriptionService.isSubscribed {
+                achievementsContent
+            } else {
+                achievementsLocked
+            }
+        }
+    }
+    
+    private var achievementsContent: some View {
         VStack(spacing: 24) {
             HStack {
                 Text("Achievements")
@@ -591,6 +642,14 @@ struct AnalyticsView: View {
                 }
             }
         }
+    }
+    
+    private var achievementsLocked: some View {
+        PremiumOverlay(
+            title: "Achievement System",
+            description: "Unlock achievements as you reach your hydration goals and build healthy habits",
+            onUpgrade: { showPaywall = true }
+        )
     }
     
     // MARK: - Helper Methods
@@ -1423,4 +1482,6 @@ struct AchievementBadge: View {
 
 #Preview {
     AnalyticsView()
+        .environmentObject(SubscriptionService.shared)
+        .environmentObject(IntakeViewModel.shared)
 }

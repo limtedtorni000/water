@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @EnvironmentObject var subscriptionService: SubscriptionService
     
     var body: some View {
         ZStack {
@@ -47,4 +48,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(SubscriptionService.shared)
 }

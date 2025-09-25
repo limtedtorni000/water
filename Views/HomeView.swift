@@ -2,8 +2,10 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = IntakeViewModel.shared
+    @EnvironmentObject var subscriptionService: SubscriptionService
     @State private var showingAddIntake = false
     @State private var animateProgress = false
+    @State private var showPaywall = false
     
     private let timeFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -51,6 +53,11 @@ struct HomeView: View {
                         // Quick add section with enhanced buttons
                         quickAddSection
                         
+                        // Upgrade prompt for non-subscribers
+                        if !subscriptionService.isSubscribed {
+                            upgradePrompt
+                        }
+                        
                         // Today's entries with better layout
                         if !viewModel.todayEntries.isEmpty {
                             todayEntriesSection
@@ -66,6 +73,9 @@ struct HomeView: View {
             .navigationBarHidden(true) // Hides the original navigation bar
             .sheet(isPresented: $showingAddIntake) {
                 AddIntakeView(viewModel: viewModel)
+            }
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
             }
               .onAppear {
                 withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
@@ -367,6 +377,55 @@ struct HomeView: View {
             }
         }
     }
+    
+    // MARK: - Upgrade Prompt
+    private var upgradePrompt: some View {
+        ModernCard(
+            padding: EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        ) {
+            HStack(spacing: 16) {
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.yellow, Color.orange],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 48, height: 48)
+                    
+                    Image(systemName: "star.fill")
+                        .font(.title3)
+                        .foregroundColor(.white)
+                }
+                
+                // Content
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Unlock Premium")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.primary)
+                    
+                    Text("Get advanced analytics, Smart insights, and more")
+                        .font(.system(size: 13))
+                        .foregroundColor(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                Spacer()
+                
+                // Arrow
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                showPaywall = true
+            }
+        }
+    }
 }
 
 // MARK: - Entry Row Component
@@ -465,8 +524,11 @@ struct EntryRow: View {
     private var unitString: String {
         intakeType == .water ? viewModel.waterUnit : viewModel.caffeineUnit
     }
+    
+    // MARK: - Upgrade Prompt
 }
 
 #Preview {
     HomeView()
+        .environmentObject(SubscriptionService.shared)
 }

@@ -3,9 +3,11 @@ import UIKit
 
 struct SettingsView: View {
     @ObservedObject var viewModel: IntakeViewModel
+    @EnvironmentObject var subscriptionService: SubscriptionService
     
     @StateObject private var settingsViewModel: SettingsViewModel
     @State private var reminderAuthorized = false
+    @State private var showPaywall = false
     
     // Temporary values for unit conversion preview
     @State private var tempWaterGoal: Double = 2000
@@ -40,6 +42,12 @@ struct SettingsView: View {
                     remindersCard
                         .transition(.scale.combined(with: .opacity))
                         .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.1), value: settingsViewModel.reminderEnabled)
+                    
+                    if !subscriptionService.isSubscribed {
+                        subscriptionCard
+                            .transition(.scale.combined(with: .opacity))
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0).delay(0.15), value: true)
+                    }
                     
                     aboutCard
                         .transition(.scale.combined(with: .opacity))
@@ -347,6 +355,89 @@ struct SettingsView: View {
         .padding(20)
         .background(Color.secondaryBackground)
         .cornerRadius(20)
+    }
+    
+    private var subscriptionCard: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Image(systemName: "star.fill")
+                    .font(.title3)
+                    .foregroundColor(.yellow)
+                Text("Premium Features")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.textPrimary)
+                Spacer()
+            }
+            
+            VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Unlock Premium")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.textPrimary)
+                            
+                            Text("Get advanced analytics, Smart insights, achievements, and more")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(spacing: 4) {
+                            Image(systemName: "crown.fill")
+                                .font(.title2)
+                                .foregroundColor(.yellow)
+                            
+                            Text("$0.99/mo")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.yellow)
+                        }
+                    }
+                }
+                .padding(16)
+                .background(
+                    LinearGradient(
+                        colors: [Color.yellow.opacity(0.2), Color.orange.opacity(0.1)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(16)
+                
+                Button(action: {
+                    showPaywall = true
+                    triggerHaptic(.medium)
+                }) {
+                    HStack {
+                        Image(systemName: "star.fill")
+                            .font(.subheadline)
+                        
+                        Text("Upgrade to Premium")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        
+                        Image(systemName: "arrow.right.circle.fill")
+                            .font(.subheadline)
+                    }
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.yellow)
+                    .cornerRadius(12)
+                }
+            }
+        }
+        .padding(20)
+        .background(Color.secondaryBackground)
+        .cornerRadius(20)
+        .sheet(isPresented: $showPaywall) {
+            PaywallView()
+        }
     }
     
     private var aboutCard: some View {
@@ -1073,4 +1164,5 @@ struct SettingsView: View {
 
 #Preview {
     SettingsView(viewModel: IntakeViewModel.shared)
+        .environmentObject(SubscriptionService.shared)
 }
