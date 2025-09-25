@@ -211,6 +211,21 @@ struct AnalyticsDashboardView: View {
                    let window = windowScene.windows.first,
                    let rootVC = window.rootViewController {
                     
+                    // Configure popover for iPad
+                    if let popover = activityVC.popoverPresentationController {
+                        // Get the key window's bounds
+                        let bounds = window.bounds
+                        // Use the center of the screen as the source
+                        popover.sourceView = window
+                        popover.sourceRect = CGRect(
+                            x: bounds.midX,
+                            y: bounds.midY,
+                            width: 0,
+                            height: 0
+                        )
+                        popover.permittedArrowDirections = []
+                    }
+                    
                     rootVC.present(activityVC, animated: true)
                 }
             }
