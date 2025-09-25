@@ -13,89 +13,41 @@ struct PaywallView: View {
     @StateObject private var subscriptionService = SubscriptionService.shared
     @State private var showPrivacyPolicy = false
     @State private var showTermsOfService = false
+    @State private var selectedProduct: Product?
+    @State private var animateGradient = false
+    @State private var showFeatures = false
+    @State private var featureOpacity = 0.0
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Header
-                    VStack(spacing: 16) {
-                        Image(systemName: "star.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.yellow)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Hero section with animated gradient
+                        heroSection
+                            .frame(height: geometry.size.height * 0.35)
                         
-                        Text("Unlock Premium")
-                            .font(.largeTitle)
-                            .fontWeight(.bold)
+                        // Features section
+                        featuresSection
+                            .padding(.horizontal, 24)
+                            .padding(.top, 32)
                         
-                        Text("Get the most out of HydraTrack with advanced features")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.horizontal)
-                    
-                    // Features
-                    VStack(alignment: .leading, spacing: 16) {
-                        FeatureRow(icon: "chart.line.uptrend.xyaxis", title: "Advanced Analytics", description: "Detailed charts and trend analysis")
-                        FeatureRow(icon: "brain.head.profile", title: "Smart Insights", description: "Personalized recommendations")
-                        FeatureRow(icon: "trophy.fill", title: "Achievements", description: "Track your progress with badges")
-                        FeatureRow(icon: "square.and.arrow.down", title: "Export Data", description: "CSV export for further analysis")
-                        FeatureRow(icon: "infinity", title: "Unlimited History", description: "Keep all your data forever")
-                        FeatureRow(icon: "bell.badge.fill", title: "Advanced Reminders", description: "Smart notification scheduling")
-                    }
-                    .padding(.horizontal)
-                    
-                    // Products
-                    VStack(spacing: 12) {
-                        if subscriptionService.isLoadingProducts {
-                            ProgressView()
-                                .padding()
-                        } else {
-                            ForEach(subscriptionService.products) { product in
-                                ProductCard(product: product) {
-                                    Task {
-                                        await subscriptionService.purchase(product)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    
-                    // Restore button
-                    Button("Restore Purchases") {
-                        Task {
-                            await subscriptionService.restorePurchases()
-                        }
-                    }
-                    .font(.footnote)
-                    .foregroundColor(.blue)
-                    
-                    // Footer links
-                    VStack(spacing: 8) {
-                        Button("Privacy Policy") {
-                            showPrivacyPolicy = true
-                        }
-                        .font(.footnote)
+                        // Pricing section
+                        pricingSection
+                            .padding(.horizontal, 24)
+                            .padding(.top, 32)
                         
-                        Button("Terms of Service") {
-                            showTermsOfService = true
-                        }
-                        .font(.footnote)
-                        
-                        Text("Subscription automatically renews unless cancelled. You can manage your subscription in App Store settings.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal)
+                        // Footer
+                        footerSection
+                            .padding(.horizontal, 24)
+                            .padding(.top, 24)
+                            .padding(.bottom, 40)
                     }
-                    .padding(.bottom)
                 }
+                .background(Color(.systemBackground))
+                .ignoresSafeArea()
             }
-            .navigationTitle("Premium")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(trailing: Button("Done") { dismiss() })
+            .navigationBarHidden(true)
             .alert("Subscription", isPresented: $subscriptionService.showAlert) {
                 Button("OK") { }
             } message: {
@@ -112,82 +64,601 @@ struct PaywallView: View {
             }
         }
     }
+    
+    // MARK: - Hero Section
+    private var heroSection: some View {
+        ZStack {
+            // Multi-layer gradient background
+            LinearGradient(
+                colors: [
+                    Color(red: 0.05, green: 0.4, blue: 0.95),
+                    Color(red: 0.3, green: 0.2, blue: 0.9),
+                    Color(red: 0.6, green: 0.3, blue: 0.8)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .hueRotation(.degrees(animateGradient ? 30 : 0))
+            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: animateGradient)
+            .onAppear {
+                animateGradient = true
+                withAnimation(.easeOut(duration: 0.8).delay(0.3)) {
+                    showFeatures = true
+                    featureOpacity = 1.0
+                }
+            }
+            
+            // Subtle pattern overlay
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    ForEach(0..<5, id: \.self) { i in
+                        Circle()
+                            .fill(Color.white.opacity(0.03))
+                            .frame(width: 80, height: 80)
+                            .offset(x: CGFloat(i * 30 - 60), y: 40)
+                    }
+                    Spacer()
+                }
+                Spacer()
+            }
+            
+            VStack(spacing: 32) {
+                // App icon and title
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 80, height: 80)
+                        
+                        Image(systemName: "drop.fill")
+                            .font(.system(size: 40, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    
+                    Text("HydraTrack")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .scaleEffect(animateGradient ? 1.05 : 1.0)
+                .animation(.easeInOut(duration: 3).repeatForever(autoreverses: true), value: animateGradient)
+                
+                VStack(spacing: 12) {
+                    Text("Unlock Premium")
+                        .font(.system(size: 42, weight: .black))
+                        .foregroundColor(.white)
+                        .shadow(color: .black.opacity(0.3), radius: 6, x: 0, y: 3)
+                    
+                    Text("Everything you need to master hydration")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(.white.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 40)
+                }
+                
+                // Social proof badges
+                HStack(spacing: 16) {
+                    SocialBadge(icon: "star.fill", text: "4.8 Rating")
+                    SocialBadge(icon: "person.2.fill", text: "50K+ Users")
+                    SocialBadge(icon: "shield.fill", text: "Secure")
+                }
+                .opacity(featureOpacity)
+                
+                // Close button
+                Button(action: { dismiss() }) {
+                    ZStack {
+                        Circle()
+                            .fill(Color.white.opacity(0.2))
+                            .frame(width: 36, height: 36)
+                        
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.trailing, 20)
+                .padding(.top, 10)
+            }
+            .padding(.top, 60)
+        }
+    }
+    
+    // MARK: - Features Section
+    private var featuresSection: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Premium Features")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Text("Upgrade your hydration experience")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .opacity(featureOpacity)
+            
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 12) {
+                EnhancedFeatureCard(
+                    icon: "chart.line.uptrend.xyaxis",
+                    title: "Advanced Analytics",
+                    description: "Detailed insights into your hydration patterns",
+                    color: .blue
+                )
+                
+                EnhancedFeatureCard(
+                    icon: "brain.head.profile",
+                    title: "Smart Insights",
+                    description: "AI-powered recommendations",
+                    color: .purple
+                )
+                
+                EnhancedFeatureCard(
+                    icon: "trophy.fill",
+                    title: "Achievements",
+                    description: "Gamified progress tracking",
+                    color: .orange
+                )
+                
+                EnhancedFeatureCard(
+                    icon: "square.and.arrow.down",
+                    title: "Export Data",
+                    description: "CSV export for analysis",
+                    color: .green
+                )
+                
+                EnhancedFeatureCard(
+                    icon: "infinity",
+                    title: "Unlimited History",
+                    description: "Never lose your data",
+                    color: .indigo
+                )
+                
+                EnhancedFeatureCard(
+                    icon: "bell.badge.fill",
+                    title: "Smart Reminders",
+                    description: "Intelligent notifications",
+                    color: .pink
+                )
+            }
+        }
+    }
+    
+    // MARK: - Pricing Section
+    private var pricingSection: some View {
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
+                Text("Choose Your Plan")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Text("7-day free trial • Cancel anytime")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+            }
+            .opacity(featureOpacity)
+            
+            if subscriptionService.isLoadingProducts {
+                VStack(spacing: 16) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text("Loading plans...")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+            } else {
+                ForEach(subscriptionService.products) { product in
+                    ModernProductCard(
+                        product: product,
+                        isSelected: selectedProduct?.id == product.id,
+                        isPopular: product.type == .autoRenewable,
+                        onTap: {
+                            selectedProduct = product
+                            Task {
+                                await subscriptionService.purchase(product)
+                            }
+                        }
+                    )
+                    .opacity(featureOpacity)
+                }
+            }
+            
+            VStack(spacing: 12) {
+                Button("Restore Purchases") {
+                    Task {
+                        await subscriptionService.restorePurchases()
+                    }
+                }
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundColor(.blue)
+                
+                HStack(spacing: 8) {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2)
+                        .foregroundColor(.green)
+                    
+                    Text("Secure payment powered by Apple")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding(.top, 8)
+        }
+    }
+    
+    // MARK: - Footer Section
+    private var footerSection: some View {
+        VStack(spacing: 16) {
+            HStack(spacing: 24) {
+                Button("Privacy Policy") {
+                    showPrivacyPolicy = true
+                }
+                .font(.footnote)
+                .foregroundColor(.blue)
+                
+                Button("Terms of Service") {
+                    showTermsOfService = true
+                }
+                .font(.footnote)
+                .foregroundColor(.blue)
+            }
+            
+            Text("Subscription auto-renews unless cancelled. Manage anytime in App Store settings.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+    }
 }
 
-struct FeatureRow: View {
+// Modern Feature Card Component
+struct FeatureCard: View {
     let icon: String
     let title: String
     let description: String
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(.blue)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.2), Color.blue.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 48, height: 48)
                 
-                Text(description)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundColor(.blue)
             }
             
-            Spacer()
+            VStack(spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Text(description)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 2)
+        )
     }
 }
 
-struct ProductCard: View {
+// Modern Product Option Card
+struct ProductOptionCard: View {
     let product: Product
-    let onPurchase: () -> Void
+    let isSelected: Bool
+    let onTap: () -> Void
     
     var body: some View {
-        Button(action: onPurchase) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(product.displayName)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                    
-                    Text(product.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                
-                let trialText = SubscriptionService.shared.getTrialPeriodText(for: product)
-                if !trialText.isEmpty {
-                    Text(trialText)
-                        .font(.caption2)
-                        .foregroundColor(.green)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.green.opacity(0.2))
-                        .cornerRadius(4)
-                }
-                
-                Spacer()
-                
-                VStack(alignment: .trailing) {
-                    Text(product.displayPrice)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                    
-                    if product.type == .autoRenewable {
-                        Text("per month")
-                            .font(.caption2)
+        Button(action: onTap) {
+            VStack(spacing: 16) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(product.displayName)
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(.primary)
+                        
+                        Text(product.description)
+                            .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text(product.displayPrice)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.primary)
+                        
+                        if product.type == .autoRenewable {
+                            Text("per month")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
+                
+                // Trial badge
+                let trialText = SubscriptionService.shared.getTrialPeriodText(for: product)
+                if !trialText.isEmpty {
+                    HStack {
+                        Image(systemName: "gift.fill")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.green)
+                        
+                        Text(trialText)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.green)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.green.opacity(0.15))
+                    )
+                }
+                
+                // CTA Button
+                HStack {
+                    Text(product.type == .autoRenewable ? "Start Free Trial" : "Unlock Lifetime")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.white)
+                    
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 18))
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(
+                        colors: [Color.blue, Color.blue.opacity(0.8)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
             }
-            .padding()
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(isSelected ? Color.blue.opacity(0.05) : Color(.secondarySystemBackground))
+                    )
+                    .shadow(color: isSelected ? Color.blue.opacity(0.2) : .black.opacity(0.05), radius: isSelected ? 8 : 4, x: 0, y: 2)
+            )
         }
         .disabled(SubscriptionService.shared.isPurchasing)
+        .scaleEffect(isSelected ? 1.02 : 1.0)
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
+// Social Proof Badge Component
+struct SocialBadge: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white)
+            
+            Text(text)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(
+            Capsule()
+                .fill(Color.white.opacity(0.15))
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                )
+        )
+    }
+}
+
+// Enhanced Feature Card Component
+struct EnhancedFeatureCard: View {
+    let icon: String
+    let title: String
+    let description: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(color)
+            }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.primary)
+                
+                Text(description)
+                    .font(.system(size: 13))
+                    .foregroundColor(.secondary)
+                    .lineLimit(1)
+            }
+            
+            Spacer()
+            
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 18))
+                .foregroundColor(.green)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
+        )
+    }
+}
+
+// Modern Product Card Component
+struct ModernProductCard: View {
+    let product: Product
+    let isSelected: Bool
+    let isPopular: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 16) {
+                // Popular badge
+                if isPopular {
+                    HStack {
+                        Image(systemName: "flame.fill")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.orange)
+                        
+                        Text("MOST POPULAR")
+                            .font(.system(size: 11, weight: .black))
+                            .foregroundColor(.orange)
+                            .tracking(1.2)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(
+                        Capsule()
+                            .fill(Color.orange.opacity(0.15))
+                    )
+                }
+                
+                VStack(spacing: 12) {
+                    // Product name
+                    Text(product.displayName)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(.primary)
+                    
+                    // Price
+                    VStack(spacing: 4) {
+                        Text(product.displayPrice)
+                            .font(.system(size: 32, weight: .black))
+                            .foregroundColor(.primary)
+                        
+                        if product.type == .autoRenewable {
+                            HStack(spacing: 4) {
+                                Text("then")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                
+                                Text("$0.99/month")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    
+                    // Trial badge
+                    let trialText = SubscriptionService.shared.getTrialPeriodText(for: product)
+                    if !trialText.isEmpty {
+                        HStack(spacing: 6) {
+                            Image(systemName: "gift")
+                                .font(.system(size: 14))
+                                .foregroundColor(.green)
+                            
+                            Text(trialText)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.green)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.green.opacity(0.1))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 20)
+                                        .stroke(Color.green.opacity(0.3), lineWidth: 1)
+                                )
+                        )
+                    }
+                    
+                    // CTA Button
+                    HStack {
+                        Spacer()
+                        
+                        if product.type == .autoRenewable {
+                            Text("Start Free Trial")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        } else {
+                            Text("Unlock Lifetime")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
+                        
+                        Spacer()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(
+                        product.type == .autoRenewable 
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [Color.blue, Color.blue.opacity(0.8)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            ))
+                            : AnyShapeStyle(Color(.tertiarySystemBackground))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(product.type == .autoRenewable ? Color.clear : Color.primary.opacity(0.2), lineWidth: 1)
+                    )
+                    .cornerRadius(12)
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(isSelected ? Color.blue.opacity(0.05) : Color(.tertiarySystemBackground))
+                    )
+                    .shadow(
+                        color: isSelected ? Color.blue.opacity(0.25) : .black.opacity(0.08),
+                        radius: isSelected ? 12 : 8,
+                        x: 0,
+                        y: isSelected ? 6 : 4
+                    )
+            )
+        }
+        .disabled(SubscriptionService.shared.isPurchasing)
+        .scaleEffect(isSelected ? 1.03 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isSelected)
     }
 }
 
