@@ -14,6 +14,7 @@ class IntakeViewModel: ObservableObject {
     
     private let storageService = StorageService.shared
     private let userDefaults = UserDefaults.standard
+    private let widgetSyncManager = WidgetSyncManager.shared
     
     private var waterGoalKey = "waterGoal"
     private var caffeineGoalKey = "caffeineGoal"
@@ -82,11 +83,17 @@ class IntakeViewModel: ObservableObject {
     func addIntake(type: IntakeType, amount: Double) {
         storageService.addIntake(type: type, amount: amount)
         loadTodayEntries()
+        
+        // Sync with widget
+        widgetSyncManager.syncHydrationData(context: storageService.context)
     }
     
     func deleteEntry(_ entry: IntakeEntry) {
         storageService.deleteEntry(entry)
         loadTodayEntries()
+        
+        // Sync with widget
+        widgetSyncManager.syncHydrationData(context: storageService.context)
     }
     
     private func updateProgress() {
